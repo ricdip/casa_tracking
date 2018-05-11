@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Casa+ Tracking</string>
+    <string name="preferenze">Preferenze</string>
+    <string name="tel">Chiama</string>
 </resources>
