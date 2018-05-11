@@ -19,5 +19,5 @@ Il progetto sar&agrave; sviluppato con l'IDE [Android Studio](https://developer.
 
 ### Contatti (e-mail) 
 
-** Riccardo, 229032: ** [riccardoarmando.diprinzio@student.univaq.it](mailto:riccardoarmando.diprinzio@student.univaq.it)
+**Riccardo, 229032:** [riccardoarmando.diprinzio@student.univaq.it](mailto:riccardoarmando.diprinzio@student.univaq.it)
 
