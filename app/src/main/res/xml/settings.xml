@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Utente registrato">
+
+    </PreferenceCategory>
+    <EditTextPreference
+        android:key="nome_utente_preference"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Nome utente"
+        android:inputType="text" />
+    <EditTextPreference
+        android:key="numero_telefono_preference"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Numero di telefono"
+        android:inputType="phone" />
+    <EditTextPreference
+        android:key="numero_telefono_educatore_preference"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Numero di telefono educatore"
+        android:inputType="phone" />
+</PreferenceScreen>

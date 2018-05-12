@@ -22,7 +22,20 @@ public class Preferences {
 
     }
 
-    public static Utente load(Context context){
+    public static void save(Context context, String key, String value){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        if(pref.getBoolean("first_access", true))
+            editor.putBoolean("first_access", false);
+
+        editor.putString(key, value);
+
+        editor.apply();
+
+    }
+
+    public static Utente loadUtente(Context context){
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -33,6 +46,16 @@ public class Preferences {
         Utente utente = new Utente(nome_utente, numero_telefono, numero_telefono_educatore);
 
         return utente;
+
+    }
+
+    public static String load(Context context, String key){
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String value = pref.getString(key, "TEST");
+
+        return value;
 
     }
 

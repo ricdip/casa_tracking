@@ -2,8 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="it.univaq.casatracking">
 
-    <uses-permission android:name="android.permission.CALL_PHONE"></uses-permission>
-    <uses-permission android:name="android.permission.SEND_SMS"></uses-permission>
+    <!-- PERMISSIONS -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.location" android:required="true" />
+    <uses-feature android:name="android.hardware.location.gps" />
+
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
 
     <application
         android:allowBackup="true"
@@ -13,6 +22,20 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- GOOGLE MAPS API -->
+        <meta-data android:name="com.google.android.geo.API_KEY"
+                   android:value="@string/API_KEY" />
+
+        <!-- /GOOGLE MAPS API -->
+
+        <!-- SERVICES -->
+        <service android:name=".services.Services" />
+
+        <!-- ACTIVITIES -->
+        <activity android:name=".SettingsActivity" />
+
+        <activity android:name=".NavigazioneLiberaActivity" />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,6 +43,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

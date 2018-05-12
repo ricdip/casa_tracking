@@ -2,4 +2,8 @@
     <string name="app_name">Casa+ Tracking</string>
     <string name="preferenze">Preferenze</string>
     <string name="tel">Chiama</string>
+    <string name="button_yes">SI</string>
+    <string name="button_no">NO</string>
+    <!-- TODO : API KEY GOOGLE MAPS -->
+    <string name="API_KEY"></string>
 </resources>
