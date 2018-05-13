@@ -26,8 +26,6 @@ import it.univaq.casatracking.utils.Preferences;
 
 public class MainActivity extends AppCompatActivity implements FingerPrintAuthCallback {
 
-    /* TODO : FINGERPRINT AUTHENTICATION DUBBIO */
-
     /* fingerprint authentication object */
     private FingerPrintAuthHelper mFingerPrintAuthHelper;
     private TextView messaggio;
@@ -75,38 +73,28 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
             final AlertDialog.Builder builder;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(getApplicationContext(), android.R.style.Theme_Material_Dialog_Alert);
+                builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
             } else {
-                builder = new AlertDialog.Builder(getApplicationContext());
+                builder = new AlertDialog.Builder(MainActivity.this);
             }
 
             builder.setTitle("ATTENZIONE")
                     .setMessage("Nessun utente registrato\nContinuare ugualmente ?")
-                    .setPositiveButton(R.string.button_yes, new DialogInterface.OnClickListener() {
+                    .setNeutralButton(R.string.button_yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
 
                             //Login Default user
                             Utente utente = new Utente();
                             utente.createTest();
 
-                            //TODO : handle server request
-
                             //next page
-
                             Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
                             Gson gson = new Gson();
                             String utente_json = gson.toJson(utente);
                             i.putExtra("utente", utente_json);
+
                             startActivity(i);
 
-                        }
-                    })
-                    .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-
-                            finish();
-                            System.exit(1);
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -126,25 +114,6 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         mFingerPrintAuthHelper.stopAuth();
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.preferenze:
-                Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-                startActivity(i);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
 
@@ -206,42 +175,33 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         //There are no finger prints registered on this device.
         //alert dialog e login default user
 
+        messaggio.setText("");
+
         boolean isFirstAccess = Preferences.checkFirstAccess(getApplicationContext());
 
         final AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(getApplicationContext(), android.R.style.Theme_Material_Dialog_Alert);
+            builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
         } else {
-            builder = new AlertDialog.Builder(getApplicationContext());
+            builder = new AlertDialog.Builder(MainActivity.this);
         }
 
         builder.setTitle("ATTENZIONE")
                 .setMessage("Nessuna impronta registrata\nContinuare ugualmente ?")
-                .setPositiveButton(R.string.button_yes, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.button_yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
                         //Login Default user
                         Utente utente = new Utente();
                         utente.createTest();
 
-                        //TODO : handle server request
-
                         //next page
-
                         Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
                         Gson gson = new Gson();
                         String utente_json = gson.toJson(utente);
                         i.putExtra("utente", utente_json);
                         startActivity(i);
 
-                    }
-                })
-                .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-
-                        finish();
-                        System.exit(1);
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -265,10 +225,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         Utente utente = Preferences.loadUtente(getApplicationContext());
 
-        //TODO : handle server request
-
         //next page
-
         Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
         Gson gson = new Gson();
         String utente_json = gson.toJson(utente);
@@ -293,6 +250,27 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                 messaggio.setText("RIPROVA");
                 break;
         }
+    }
+
+    /* MENU PREFERENZE */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.preferenze:
+                Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+                startActivity(i);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

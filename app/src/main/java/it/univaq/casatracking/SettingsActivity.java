@@ -53,6 +53,8 @@ public class SettingsActivity extends AppCompatActivity {
                     String nome_utente = (String) newValue;
 
                     Preferences.save(getContext(), "nome_utente", nome_utente);
+
+                    preference.setSummary(nome_utente);
                     return true;
                 }
             });
@@ -63,6 +65,8 @@ public class SettingsActivity extends AppCompatActivity {
                     String numero_telefono = (String) newValue;
 
                     Preferences.save(getContext(), "numero_telefono", numero_telefono);
+
+                    preference.setSummary(numero_telefono);
                     return true;
                 }
             });
@@ -73,6 +77,8 @@ public class SettingsActivity extends AppCompatActivity {
                     String numero_telefono_educatore = (String) newValue;
 
                     Preferences.save(getContext(), "numero_telefono_educatore", numero_telefono_educatore);
+
+                    preference.setSummary(numero_telefono_educatore);
                     return true;
                 }
             });

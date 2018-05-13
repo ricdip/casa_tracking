@@ -47,8 +47,8 @@ public class Utente {
     }
 
     public void createTest(){
-        this.nome = "TEST";
-        this.n_telefono = "TEST";
+        this.nome = "Francesco Tarquini TEST";
+        this.n_telefono = "3355259890";
         this.n_telefono_educatore = "TEST";
         this.isTest = true;
     }
