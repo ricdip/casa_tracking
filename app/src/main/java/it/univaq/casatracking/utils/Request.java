@@ -105,7 +105,7 @@ public class Request extends AsyncTask<Object, Void, String> {
 
     /* CONNECTION IS ACTIVE */
 
-    private boolean isConnected(Context context){
+    public static boolean isConnected(Context context){
 
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = null;

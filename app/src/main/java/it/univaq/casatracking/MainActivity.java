@@ -6,12 +6,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
-import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -22,9 +21,9 @@ import com.multidots.fingerprintauth.FingerPrintAuthCallback;
 import com.multidots.fingerprintauth.FingerPrintAuthHelper;
 
 import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.utils.Dialog;
 import it.univaq.casatracking.utils.Preferences;
 
-// TODO : NO INTERNET CONNECTION HANDLER
 
 public class MainActivity extends AppCompatActivity implements FingerPrintAuthCallback {
 
@@ -79,12 +78,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
             //login default user
 
-            final AlertDialog.Builder builder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-            } else {
-                builder = new AlertDialog.Builder(MainActivity.this);
-            }
+            AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(MainActivity.this);
 
             builder.setTitle("ATTENZIONE")
                     .setMessage("Nessun utente registrato\nContinuare ugualmente ?")
@@ -149,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
                     } else {
                         //not all permissions granted
-                        // TODO : ALERT DIALOG CON SPIEGAZIONE PERICOLO
-
                         if ((!phone_call) && (!send_sms)) {
                             this.finish();
                             System.exit(1);
@@ -161,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
                 } else {
                     //permissions not granted
-                    // TODO : ALERT DIALOG CON SPIEGAZIONE
                     this.finish();
                     System.exit(1);
                 }
@@ -195,12 +186,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
             /* TODO : HANDLE OTHER AUTH METHOD */
         }
 
-        final AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(MainActivity.this);
-        }
+        AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(MainActivity.this);
 
         builder.setTitle("ATTENZIONE")
                 .setMessage("Nessuna impronta registrata\nContinuare ugualmente ?")
@@ -283,6 +269,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         switch (id) {
             case R.id.preferenze:
                 Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+                i.putExtra("backpage", "mainactivity");
                 startActivity(i);
                 return true;
         }

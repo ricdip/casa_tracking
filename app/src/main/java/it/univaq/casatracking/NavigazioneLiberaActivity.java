@@ -13,21 +13,20 @@ import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
+import it.univaq.casatracking.utils.Dialog;
 import it.univaq.casatracking.utils.Request;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -170,7 +170,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         @Override
         public void onProviderDisabled(String provider) {
-
+            Toast.makeText(getApplicationContext(), "ATTIVA LA LOCALIZZAZIONE GPS", Toast.LENGTH_LONG).show();
         }
     };
 
@@ -226,18 +226,20 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     protected void onResume() {
         super.onResume();
 
+        if(!Request.isConnected(getApplicationContext())){
+            //snackbar creation
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_constraint), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
+            snackbar.show();
+            return;
+        }
+
         //TEST se utente è utente di default
 
         if(utente.isTest()){
             notify_cancelled = true;
 
             //alert dialog
-            final AlertDialog.Builder builder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(NavigazioneLiberaActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-            } else {
-                builder = new AlertDialog.Builder(NavigazioneLiberaActivity.this);
-            }
+            AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(NavigazioneLiberaActivity.this);
 
             builder.setTitle("ATTENZIONE")
                     .setMessage("Login come utente di default\n")
@@ -251,8 +253,6 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setCancelable(true)
                     .show();
-
-            /* TODO : NOTIFICA PERMANENTE FINO A CHE UTENTE DEFAULT ATTIVO */
 
         }
 
@@ -313,6 +313,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         mMap = googleMap;
     }
 
+
     /* MENU PREFERENZE */
 
     @Override
@@ -328,21 +329,23 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         switch (id) {
             case R.id.preferenze:
                 Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+                i.putExtra("backpage", "navigazioneliberaactivity");
                 startActivity(i);
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
 
+    /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
     private synchronized void alert(){
 
+        /* BOOLEAN PER ATOMICITA' DELLA FUNZIONE ALERT */
         if(alertIsActive){
             return;
         }
-
         alertIsActive = true;
+
 
         //messaggio sonoro
         mp.start();
@@ -351,15 +354,11 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         // pass 0 if you want to repeat this pattern from 0th index
         v.vibrate(mVibratePattern, 0);
 
-        //creazione dialog chiamata
-        final AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(NavigazioneLiberaActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(NavigazioneLiberaActivity.this);
-        }
-
         dismissed = false;
+
+        //creazione dialog chiamata
+        AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(NavigazioneLiberaActivity.this);
+
         builder.setTitle("ATTENZIONE")
                 .setMessage("CHIAMARE L'EDUCATORE ?")
                 .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
@@ -377,6 +376,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         notify_cancelled = true;
                         dismissed = true;
                         dialog.dismiss();
+
                         alertIsActive = false;
                         autoCallHandler.removeCallbacks(autoCallRunnable);
 
@@ -392,6 +392,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         notify_cancelled = true;
                         dismissed = true;
                         dialog.dismiss();
+
                         alertIsActive = false;
                         autoCallHandler.removeCallbacks(autoCallRunnable);
                     }
@@ -403,6 +404,20 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         // autocall in TIME_OUT_AUTOMATIC_CALL ms
         autoCallHandler.postDelayed(autoCallRunnable, TIME_OUT_AUTOMATIC_CALL);
+
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if(Looper.getMainLooper().getThread().equals(Thread.currentThread())){
+
+            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(i);
+
+        } else {
+            super.onBackPressed();
+        }
 
     }
 
