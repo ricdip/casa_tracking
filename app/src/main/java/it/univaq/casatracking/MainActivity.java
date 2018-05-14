@@ -24,6 +24,8 @@ import com.multidots.fingerprintauth.FingerPrintAuthHelper;
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.utils.Preferences;
 
+// TODO : NO INTERNET CONNECTION HANDLER
+
 public class MainActivity extends AppCompatActivity implements FingerPrintAuthCallback {
 
     /* fingerprint authentication object */
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     private TextView messaggio;
 
     public static final int PERMISSION_MULTIPLE_REQUEST = 1;
+
+    private static boolean dialog_show = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         if (isFirstAccess) {
 
+            if(dialog_show){
+                return;
+            }
+
             //login default user
 
             final AlertDialog.Builder builder;
@@ -80,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
             builder.setTitle("ATTENZIONE")
                     .setMessage("Nessun utente registrato\nContinuare ugualmente ?")
-                    .setNeutralButton(R.string.button_yes, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.button_procedi, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
 
                             //Login Default user
@@ -95,11 +103,15 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
                             startActivity(i);
 
+                            dialog_show = false;
+
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setCancelable(false)
                     .show();
+
+            dialog_show = true;
 
         } else {
             mFingerPrintAuthHelper.startAuth();
@@ -179,6 +191,10 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         boolean isFirstAccess = Preferences.checkFirstAccess(getApplicationContext());
 
+        if(!isFirstAccess){
+            /* TODO : HANDLE OTHER AUTH METHOD */
+        }
+
         final AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
@@ -188,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         builder.setTitle("ATTENZIONE")
                 .setMessage("Nessuna impronta registrata\nContinuare ugualmente ?")
-                .setNeutralButton(R.string.button_yes, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.button_procedi , new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
                         //Login Default user

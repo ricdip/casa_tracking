@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
+import it.univaq.casatracking.R;
 import it.univaq.casatracking.model.Utente;
 
 public class Request extends AsyncTask<Object, Void, String> {
@@ -36,19 +37,20 @@ public class Request extends AsyncTask<Object, Void, String> {
 
         switch (request){
             case "monitor":
-                result = doMonitorRequest(utente.getNumeroTelefono(), loc.latitude, loc.longitude);
+                result = doMonitorRequest(context, utente.getNumeroTelefono(), loc.latitude, loc.longitude);
                 break;
         }
 
         return result;
     }
 
-    private String doMonitorRequest(String phone, double lat, double lon){
+    private String doMonitorRequest(Context context, String phone, double lat, double lon){
 
         //handle connection, request and return response
 
         //address
-        String address = "http://www.smartengineers.eu/joomla/components/com_locationtracking/script/script.php";
+        String address = context.getString(R.string.server_path);
+
         //get request
         address += "?task=monitor" + "&phone=" + phone + "&lat=" + lat + "&lon=" + lon;
 

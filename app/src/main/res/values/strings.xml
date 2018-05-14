@@ -2,10 +2,13 @@
     <string name="app_name">Casa+ Tracking</string>
     <string name="preferenze">Preferenze</string>
     <string name="tel">Chiama</string>
-    <string name="button_yes">PROCEDI</string>
+    <string name="button_procedi">PROCEDI</string>
     <string name="button_si">SI</string>
     <string name="button_no">NO</string>
 
     <!-- GOOGLE MAPS API KEY -->
     <string name="API_KEY">AIzaSyBAV8ooUwmlCF2QDKBitCfR2GyrqnvnIXk</string>
+
+    <!-- SITE -->
+    <string name="server_path">http://www.smartengineers.eu/joomla/components/com_locationtracking/script/script.php</string>
 </resources>

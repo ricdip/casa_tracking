@@ -11,6 +11,8 @@ import it.univaq.casatracking.utils.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    //TODO : UNA VOLTA MESSO L'UTENTE, GESTIRE RICARICA SESSIONE
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

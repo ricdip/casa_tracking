@@ -15,6 +15,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -56,6 +58,44 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     private boolean notify_cancelled;
     private MediaPlayer mp;
     private Vibrator v;
+    private long[] mVibratePattern;
+
+    //alert only called once
+    private static boolean alertIsActive;
+
+    /* handler per autocall */
+    private static final int TIME_OUT_AUTOMATIC_CALL = 10000;
+    private static boolean dismissed = false;
+
+    private Handler autoCallHandler = new Handler();
+
+    private Runnable autoCallRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            autoCallHandler.removeCallbacks(autoCallRunnable);
+
+            if(!dismissed){
+
+                mp.pause();
+                //mp.release();
+
+                v.cancel();
+                alertIsActive = false;
+                notify_cancelled = true;
+
+                //call educatore
+                Intent i = new Intent(getApplicationContext(), Services.class);
+                i.setAction(Services.ACTION_CALL_EDUCATORE);
+                startService(i);
+
+            } else {
+                //dialog dismissed
+
+            }
+
+        }
+    };
 
 
     /* location change listener */
@@ -88,7 +128,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                     myMarker.remove();
 
                 myMarker = mMap.addMarker(options);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 10f));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 18f));
 
             }
 
@@ -161,12 +201,18 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         //boolean notify per area non sicura
         notify_cancelled = false;
 
+        //boolean alert is active
+        alertIsActive = false;
+
         //creazione ring per alert
         Uri alert_ring = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
         mp = MediaPlayer.create(getApplicationContext(), alert_ring);
 
-        //creazion vibrazione per alert
+        //creazione vibrazione per alert
         v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+
+        //vibrate pattern
+        mVibratePattern = new long[]{0, 400, 200, 400};
 
         //setting mapfragment
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -180,24 +226,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     protected void onResume() {
         super.onResume();
 
-        //access location
-        mManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        //check permissions
-        int checkPerms = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if(checkPerms == PackageManager.PERMISSION_GRANTED){
-            //location perms granted
-
-            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
-
-        } else {
-            //location perms not granted, request perms
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
-
-        }
+        //TEST se utente è utente di default
 
         if(utente.isTest()){
             notify_cancelled = true;
@@ -212,19 +241,39 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             builder.setTitle("ATTENZIONE")
                     .setMessage("Login come utente di default\n")
-                    .setNeutralButton(R.string.button_yes, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.button_procedi, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
 
-
+                            dialog.dismiss();
 
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setCancelable(false)
+                    .setCancelable(true)
                     .show();
+
+            /* TODO : NOTIFICA PERMANENTE FINO A CHE UTENTE DEFAULT ATTIVO */
 
         }
 
+        //access location
+        mManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        //check permissions
+        int checkPerms = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if(checkPerms == PackageManager.PERMISSION_GRANTED){
+            //location perms granted
+
+            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3 * 1000, 5, listener);
+
+        } else {
+            //location perms not granted, request perms
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+
+        }
 
     }
 
@@ -233,6 +282,12 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         super.onStop();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mp.stop();
+        mp.release();
+    }
 
     /* Richiedi permessi */
     @SuppressLint("MissingPermission")
@@ -243,7 +298,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         if (requestCode == 101) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+                //minTime in ms
+                //minDistance in m
+                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3 * 1000, 5, listener);
 
             }
         }
@@ -281,10 +338,14 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
     private synchronized void alert(){
 
-        mp.start();
+        if(alertIsActive){
+            return;
+        }
 
-        long[] mVibratePattern = new long[]{0, 400, 200, 400};
-        // Vibrate for 1 seconds
+        alertIsActive = true;
+
+        //messaggio sonoro
+        mp.start();
 
         // -1 : Do not repeat this pattern
         // pass 0 if you want to repeat this pattern from 0th index
@@ -298,12 +359,14 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             builder = new AlertDialog.Builder(NavigazioneLiberaActivity.this);
         }
 
+        dismissed = false;
         builder.setTitle("ATTENZIONE")
                 .setMessage("CHIAMARE L'EDUCATORE ?")
                 .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
-                        mp.stop();
+                        mp.pause();
+                        //mp.release();
                         v.cancel();
 
                         //call educatore
@@ -311,23 +374,35 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         i.setAction(Services.ACTION_CALL_EDUCATORE);
                         startService(i);
 
+                        notify_cancelled = true;
+                        dismissed = true;
                         dialog.dismiss();
+                        alertIsActive = false;
+                        autoCallHandler.removeCallbacks(autoCallRunnable);
+
                     }
                 })
                 .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        mp.stop();
+                        mp.pause();
+                        //mp.release();
                         v.cancel();
 
+                        notify_cancelled = true;
+                        dismissed = true;
                         dialog.dismiss();
+                        alertIsActive = false;
+                        autoCallHandler.removeCallbacks(autoCallRunnable);
                     }
                 })
+
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setCancelable(false)
                 .show();
 
-
+        // autocall in TIME_OUT_AUTOMATIC_CALL ms
+        autoCallHandler.postDelayed(autoCallRunnable, TIME_OUT_AUTOMATIC_CALL);
 
     }
 
