@@ -3,15 +3,18 @@ package it.univaq.casatracking;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -91,7 +94,20 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             } else {
                 //dialog dismissed
+                //no action
 
+            }
+
+        }
+    };
+
+    /* receiver for internet connection changes */
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //entro in receiver e la connessione è stata ristabilita, ridisegnamo la finestra
+            if(Request.isConnected(getApplicationContext())){
+                onResume();
             }
 
         }
@@ -120,6 +136,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             options.position(loc);
             options.title("SONO QUI");
+            /*options.snippet("info")*/
 
             //update location on map
             if(mMap != null){
@@ -140,9 +157,16 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 //print response (debug)
 
                 JSONObject json = new JSONObject(res);
+
+                if(json.has("error")){
+                    String error = json.getString("error");
+                    System.out.println("SERVER RESPONSE error: " + error);
+                    return;
+                }
+
                 String alert = json.getString("alert");
 
-                System.out.println("SERVER RESPONSE: " + res + "\n" + "ALERT " + alert);
+                //System.out.println("SERVER RESPONSE: " + res + "\n" + "ALERT " + alert);
 
                 if(alert.equals("1") && (!notify_cancelled)){
                     //utente fuori area sicura
@@ -230,6 +254,14 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             //snackbar creation
             Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_constraint), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
             snackbar.show();
+
+            //preparo intent per ripresa connessione
+            //preparing to download
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            //receiver registrato
+            getApplicationContext().registerReceiver(receiver, filter);
+
             return;
         }
 
@@ -265,7 +297,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         if(checkPerms == PackageManager.PERMISSION_GRANTED){
             //location perms granted
 
-            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3 * 1000, 5, listener);
+            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
 
         } else {
             //location perms not granted, request perms
@@ -280,6 +312,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     @Override
     protected void onStop() {
         super.onStop();
+        getApplicationContext().unregisterReceiver(receiver);
     }
 
     @Override
@@ -300,7 +333,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
                 //minTime in ms
                 //minDistance in m
-                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3 * 1000, 5, listener);
+                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
 
             }
         }
@@ -311,6 +344,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        // Sets the map type to be "normal"
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     }
 
 

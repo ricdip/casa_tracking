@@ -139,15 +139,12 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
                     if (phone_call && internet && gps && send_sms) {
                         //all permissions granted
-
+                        //no actions
 
                     } else {
                         //not all permissions granted
-                        if ((!phone_call) && (!send_sms)) {
-                            this.finish();
-                            System.exit(1);
-                        }
-
+                        this.finish();
+                        System.exit(1);
 
                     }
 

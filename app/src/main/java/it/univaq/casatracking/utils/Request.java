@@ -32,7 +32,7 @@ public class Request extends AsyncTask<Object, Void, String> {
         String result = "";
 
         if(!isConnected(context)){
-            return "NO INTERNET CONNECTION";
+            return "{\"error\": \"NO INTERNET CONNECTION\"}";
         }
 
         switch (request){
@@ -76,8 +76,14 @@ public class Request extends AsyncTask<Object, Void, String> {
                 success = false;
             }
 
+            if(!success){
+                return "{\"error\":\"code " + responseCode + "\"}";
+            }
+
+            /*
             System.out.println("\nSending 'GET' request to URL : " + address);
             System.out.println("Response Code : " + responseCode + "\nsuccess: " + success);
+            */
 
             //read response
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -90,14 +96,13 @@ public class Request extends AsyncTask<Object, Void, String> {
             in.close();
 
 
-            System.out.println("RESPONSE: " + response.toString());
-
             result = response.toString();
 
         } catch(IOException e){
             e.printStackTrace();
         } finally {
-            con.disconnect();
+            if(con != null)
+                con.disconnect();
         }
 
         return result;
