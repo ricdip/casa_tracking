@@ -102,6 +102,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     };
 
     /* receiver for internet connection changes */
+    private static boolean isReceiverRegistered = false;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -252,7 +253,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         if(!Request.isConnected(getApplicationContext())){
             //snackbar creation
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_constraint), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_relative), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
             snackbar.show();
 
             //preparo intent per ripresa connessione
@@ -260,6 +261,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             IntentFilter filter = new IntentFilter();
             filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
             //receiver registrato
+            isReceiverRegistered = true;
             getApplicationContext().registerReceiver(receiver, filter);
 
             return;
@@ -312,7 +314,12 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     @Override
     protected void onStop() {
         super.onStop();
-        getApplicationContext().unregisterReceiver(receiver);
+
+        if(isReceiverRegistered){
+            getApplicationContext().unregisterReceiver(receiver);
+            isReceiverRegistered = false;
+        }
+
     }
 
     @Override
