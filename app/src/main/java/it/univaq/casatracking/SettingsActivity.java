@@ -118,9 +118,9 @@ public class SettingsActivity extends AppCompatActivity {
                 startActivity(i);
             }
 
-        } else {
-            super.onBackPressed();
         }
+
+        super.onBackPressed();
 
     }
 }

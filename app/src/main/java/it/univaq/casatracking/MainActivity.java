@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -96,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                             i.putExtra("utente", utente_json);
 
                             startActivity(i);
+
+                            finish();
 
                             dialog_show = false;
 
@@ -201,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                         i.putExtra("utente", utente_json);
                         startActivity(i);
 
+                        finish();
+
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -230,6 +235,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         String utente_json = gson.toJson(utente);
         i.putExtra("utente", utente_json);
         startActivity(i);
+
+        finish();
 
     }
 
@@ -268,6 +275,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                 Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
                 i.putExtra("backpage", "mainactivity");
                 startActivity(i);
+
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);

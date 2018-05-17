@@ -11,4 +11,5 @@
 
     <!-- SITE -->
     <string name="server_path">http://www.smartengineers.eu/joomla/components/com_locationtracking/script/script.php</string>
+    <string name="fingerprint">FINGERPRINT</string>
 </resources>

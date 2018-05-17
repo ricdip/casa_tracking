@@ -373,6 +373,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
                 i.putExtra("backpage", "navigazioneliberaactivity");
                 startActivity(i);
+
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -457,9 +459,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             Intent i = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(i);
 
-        } else {
-            super.onBackPressed();
         }
+
+        super.onBackPressed();
 
     }
 
