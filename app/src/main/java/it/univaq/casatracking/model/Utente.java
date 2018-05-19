@@ -6,20 +6,16 @@ public class Utente {
     private String n_telefono;
     private String n_telefono_educatore;
 
-    private boolean isTest;
-
     public Utente(){
         this.nome = "";
         this.n_telefono = "";
         this.n_telefono_educatore = "";
-        this.isTest = false;
     }
 
     public Utente(String nome, String n_telefono, String n_telefono_educatore){
         this.nome = nome;
         this.n_telefono = n_telefono;
         this.n_telefono_educatore = n_telefono_educatore;
-        this.isTest = false;
     }
 
     public String getNome(){
@@ -44,17 +40,6 @@ public class Utente {
 
     public void setNumeroTelefonoEducatore(String n_telefono_educatore){
         this.n_telefono_educatore = n_telefono_educatore;
-    }
-
-    public void createTest(){
-        this.nome = "Francesco Tarquini TEST";
-        this.n_telefono = "3355259890";
-        this.n_telefono_educatore = "TEST";
-        this.isTest = true;
-    }
-
-    public boolean isTest(){
-        return this.isTest;
     }
 
 }

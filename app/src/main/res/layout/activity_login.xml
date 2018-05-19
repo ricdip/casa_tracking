@@ -2,52 +2,42 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/login_constraint"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="139dp"
-        android:layout_height="234dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:contentDescription="@string/fingerprint"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.263"
-        app:srcCompat="?android:attr/fingerprintAuthDrawable" />
-
-    <TextView
-        android:id="@+id/messaggio"
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/editTextNome"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:textStyle="bold"
+        android:ems="10"
+        android:hint="@string/edittext_nome"
+        android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.601" />
+        app:layout_constraintVertical_bias="0.416" />
 
-    <Button
-        android:id="@+id/riconoscimentoFaccialeButton"
-        android:layout_width="200dp"
+    <EditText
+        android:id="@+id/editTextTelefono"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="@string/riconoscimentoFaccialeButton"
+        android:ems="10"
+        android:hint="@string/edittext_telefono"
+        android:inputType="phone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.805" />
+        app:layout_constraintVertical_bias="0.565" />
 
     <Button
-        android:id="@+id/loginButton"
+        android:id="@+id/LOGIN_loginButton"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -57,5 +47,20 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.941" />
+        app:layout_constraintVertical_bias="0.744" />
+
+    <TextView
+        android:id="@+id/login_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/login_title"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.227" />
+
 </android.support.constraint.ConstraintLayout>

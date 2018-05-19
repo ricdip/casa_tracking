@@ -11,5 +11,24 @@
 
     <!-- SITE -->
     <string name="server_path">http://www.smartengineers.eu/joomla/components/com_locationtracking/script/script.php</string>
+
     <string name="fingerprint">FINGERPRINT</string>
+    <string name="riconoscimentoFaccialeButton">riconoscimento facciale</string>
+    <string name="loginButton">login</string>
+    <string name="edittext_nome">NOME</string>
+    <string name="edittext_telefono">TELEFONO</string>
+    <string name="button_NavigazioneLibera">navigazione libera</string>
+    <string name="button_ScegliPercorso">scegli percorso</string>
+    <string name="login_title">LOGIN</string>
+
+    <string name="alert_title">ATTENZIONE</string>
+    <string name="alert_no_user_registered">Nessun utente registrato
+Andare alle preferenze ?</string>
+    <string name="alert_no_fingerprints">Nessuna impronta registrata
+inserirle ?</string>
+    <string name="alert_call_educatore">CHIAMARE L\'EDUCATORE ?</string>
+
+    <string name="textview_riprova">RIPROVA</string>
+    <string name="textview_error_not_recoverable">DAI IL TELEFONO ALL\'EDUCATORE</string>
+    <string name="textview_scan_fingerprint">METTI IL DITO SUL LETTORE IMPRONTE</string>
 </resources>

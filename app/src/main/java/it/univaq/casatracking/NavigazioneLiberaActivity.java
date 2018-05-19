@@ -18,17 +18,15 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -38,7 +36,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,15 +44,17 @@ import java.util.concurrent.ExecutionException;
 
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
-import it.univaq.casatracking.utils.Dialog;
+import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static final String TAG = "NavigazioneLibera";
+
     private GoogleMap mMap;
     private LocationManager mManager;
 
-    private ImageButton callButton;
+    private Button callButton;
 
     private Utente utente;
     private boolean notify_cancelled;
@@ -72,7 +71,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
     private Handler autoCallHandler = new Handler();
 
+    private LatLng autoCallRunnableLatLng;
     private Runnable autoCallRunnable = new Runnable() {
+
         @Override
         public void run() {
 
@@ -81,16 +82,18 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             if(!dismissed){
 
                 mp.pause();
-                //mp.release();
 
                 v.cancel();
+
                 alertIsActive = false;
                 notify_cancelled = true;
 
-                //call educatore
-                Intent i = new Intent(getApplicationContext(), Services.class);
-                i.setAction(Services.ACTION_CALL_EDUCATORE);
-                startService(i);
+                //sms con coordinate a educatore
+                Intent doAlert = new Intent(getApplicationContext(), Services.class);
+                doAlert.setAction(Services.ACTION_ALERT);
+                //https://www.google.com/maps/@42.0458585,13.9318123,15z
+                doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + autoCallRunnableLatLng.latitude + "," + autoCallRunnableLatLng.longitude + ",15z");
+                startService(doAlert);
 
             } else {
                 //dialog dismissed
@@ -161,17 +164,15 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
                 if(json.has("error")){
                     String error = json.getString("error");
-                    System.out.println("SERVER RESPONSE error: " + error);
+                    Log.d(TAG, "Response error" + error);
                     return;
                 }
 
                 String alert = json.getString("alert");
 
-                //System.out.println("SERVER RESPONSE: " + res + "\n" + "ALERT " + alert);
-
                 if(alert.equals("1") && (!notify_cancelled)){
                     //utente fuori area sicura
-                    alert();
+                    alert(loc);
                 }
 
             } catch(InterruptedException|ExecutionException|JSONException e){
@@ -204,7 +205,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigazione_libera);
 
-        callButton = findViewById(R.id.callButton1);
+        callButton = findViewById(R.id.navigazionelibera_callButton);
 
         callButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -218,10 +219,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         });
 
         //get utente
-        Intent i = getIntent();
-        String utente_json = i.getStringExtra("utente");
-        Gson gson = new Gson();
-        utente = gson.fromJson(utente_json, Utente.class);
+        utente = Preferences.loadUtente(getApplicationContext());
 
         //boolean notify per area non sicura
         notify_cancelled = false;
@@ -253,41 +251,18 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         if(!Request.isConnected(getApplicationContext())){
             //snackbar creation
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_relative), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_constraint), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
             snackbar.show();
 
             //preparo intent per ripresa connessione
-            //preparing to download
             IntentFilter filter = new IntentFilter();
             filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
             //receiver registrato
             isReceiverRegistered = true;
             getApplicationContext().registerReceiver(receiver, filter);
 
             return;
-        }
-
-        //TEST se utente è utente di default
-
-        if(utente.isTest()){
-            notify_cancelled = true;
-
-            //alert dialog
-            AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(NavigazioneLiberaActivity.this);
-
-            builder.setTitle("ATTENZIONE")
-                    .setMessage("Login come utente di default\n")
-                    .setNegativeButton(R.string.button_procedi, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            dialog.dismiss();
-
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setCancelable(true)
-                    .show();
-
         }
 
         //access location
@@ -351,38 +326,15 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        //disabilita gestures sulla mappa
+        mMap.getUiSettings().setAllGesturesEnabled(false);
+
         // Sets the map type to be "normal"
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     }
 
-
-    /* MENU PREFERENZE */
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.preferenze:
-                Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-                i.putExtra("backpage", "navigazioneliberaactivity");
-                startActivity(i);
-
-                finish();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-
     /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
-    private synchronized void alert(){
+    private synchronized void alert(final LatLng loc){
 
         /* BOOLEAN PER ATOMICITA' DELLA FUNZIONE ALERT */
         if(alertIsActive){
@@ -401,21 +353,23 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         dismissed = false;
 
         //creazione dialog chiamata
-        AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(NavigazioneLiberaActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(NavigazioneLiberaActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
-        builder.setTitle("ATTENZIONE")
-                .setMessage("CHIAMARE L'EDUCATORE ?")
+        builder.setTitle(getApplicationContext().getString(R.string.alert_title))
+                .setMessage(getApplicationContext().getString(R.string.alert_call_educatore)
+)
                 .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
                         mp.pause();
-                        //mp.release();
                         v.cancel();
 
-                        //call educatore
-                        Intent i = new Intent(getApplicationContext(), Services.class);
-                        i.setAction(Services.ACTION_CALL_EDUCATORE);
-                        startService(i);
+                        //alert a educatore
+                        Intent doAlert = new Intent(getApplicationContext(), Services.class);
+                        doAlert.setAction(Services.ACTION_ALERT);
+                        //https://www.google.com/maps/@42.0458585,13.9318123,15z
+                        doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + loc.latitude + "," + loc.longitude + ",15z");
+                        startService(doAlert);
 
                         notify_cancelled = true;
                         dismissed = true;
@@ -447,21 +401,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 .show();
 
         // autocall in TIME_OUT_AUTOMATIC_CALL ms
+        autoCallRunnableLatLng = loc;
         autoCallHandler.postDelayed(autoCallRunnable, TIME_OUT_AUTOMATIC_CALL);
-
-    }
-
-    @Override
-    public void onBackPressed() {
-
-        if(Looper.getMainLooper().getThread().equals(Thread.currentThread())){
-
-            Intent i = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(i);
-
-        }
-
-        super.onBackPressed();
 
     }
 

@@ -1,17 +1,12 @@
 package it.univaq.casatracking;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Looper;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import com.google.gson.Gson;
-
-import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.utils.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -46,9 +41,9 @@ public class SettingsActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
 
-            nome_utente = (EditTextPreference) findPreference("nome_utente_preference");
-            numero_telefono = (EditTextPreference) findPreference("numero_telefono_preference");
-            numero_telefono_educatore = (EditTextPreference) findPreference("numero_telefono_educatore_preference");
+            nome_utente = (EditTextPreference) findPreference("nome_utente");
+            numero_telefono = (EditTextPreference) findPreference("numero_telefono");
+            numero_telefono_educatore = (EditTextPreference) findPreference("numero_telefono_educatore");
 
 
             // listeners
@@ -57,7 +52,9 @@ public class SettingsActivity extends AppCompatActivity {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String nome_utente = (String) newValue;
 
-                    Preferences.save(getContext(), "nome_utente", nome_utente);
+                    //Preferences.save(getContext(), "nome_utente", nome_utente);
+                    if(Preferences.checkFirstAccess(getContext()))
+                        Preferences.cancelFirstAccess(getContext());
 
                     preference.setSummary(nome_utente);
                     return true;
@@ -69,7 +66,9 @@ public class SettingsActivity extends AppCompatActivity {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String numero_telefono = (String) newValue;
 
-                    Preferences.save(getContext(), "numero_telefono", numero_telefono);
+                    //Preferences.save(getContext(), "numero_telefono", numero_telefono);
+                    if(Preferences.checkFirstAccess(getContext()))
+                        Preferences.cancelFirstAccess(getContext());
 
                     preference.setSummary(numero_telefono);
                     return true;
@@ -81,7 +80,9 @@ public class SettingsActivity extends AppCompatActivity {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String numero_telefono_educatore = (String) newValue;
 
-                    Preferences.save(getContext(), "numero_telefono_educatore", numero_telefono_educatore);
+                    //Preferences.save(getContext(), "numero_telefono_educatore", numero_telefono_educatore);
+                    if(Preferences.checkFirstAccess(getContext()))
+                        Preferences.cancelFirstAccess(getContext());
 
                     preference.setSummary(numero_telefono_educatore);
                     return true;
@@ -95,32 +96,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         }
 
-
-    }
-
-    @Override
-    public void onBackPressed() {
-
-        if(Looper.getMainLooper().getThread().equals(Thread.currentThread())){
-
-            //ricaricare sessione
-            Utente utente = Preferences.loadUtente(getApplicationContext());
-            Gson gson = new Gson();
-            String utente_json = gson.toJson(utente);
-
-            if(getIntent().getStringExtra("backpage").equals("mainactivity")){
-                Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                i.putExtra("utente", utente_json);
-                startActivity(i);
-            } else if(getIntent().getStringExtra("backpage").equals("navigazioneliberaactivity")){
-                Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
-                i.putExtra("utente", utente_json);
-                startActivity(i);
-            }
-
-        }
-
-        super.onBackPressed();
 
     }
 }

@@ -5,19 +5,19 @@
 
     </PreferenceCategory>
     <EditTextPreference
-        android:key="nome_utente_preference"
+        android:key="nome_utente"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Nome utente"
         android:inputType="text" />
     <EditTextPreference
-        android:key="numero_telefono_preference"
+        android:key="numero_telefono"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Numero di telefono"
         android:inputType="phone" />
     <EditTextPreference
-        android:key="numero_telefono_educatore_preference"
+        android:key="numero_telefono_educatore"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Numero di telefono educatore"

@@ -12,7 +12,8 @@ public class Preferences {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = pref.edit();
 
-        editor.putBoolean("first_access", false);
+        if(pref.getBoolean("first_access", true))
+            editor.putBoolean("first_access", false);
 
         editor.putString("nome_utente", utente.getNome());
         editor.putString("numero_telefono", utente.getNumeroTelefono());
@@ -65,6 +66,15 @@ public class Preferences {
         boolean isFirst = pref.getBoolean("first_access", true);
 
         return isFirst;
+    }
+
+    public static void cancelFirstAccess(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putBoolean("first_access", false);
+
+        editor.apply();
     }
 
 }

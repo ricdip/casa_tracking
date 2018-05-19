@@ -7,22 +7,21 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.multidots.fingerprintauth.AuthErrorCodes;
 import com.multidots.fingerprintauth.FingerPrintAuthCallback;
 import com.multidots.fingerprintauth.FingerPrintAuthHelper;
+import com.multidots.fingerprintauth.FingerPrintUtils;
 
-import it.univaq.casatracking.model.Utente;
-import it.univaq.casatracking.utils.Dialog;
 import it.univaq.casatracking.utils.Preferences;
 
 
@@ -32,9 +31,12 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     private FingerPrintAuthHelper mFingerPrintAuthHelper;
     private TextView messaggio;
 
+    private Button riconoscimentoFaccialeButton;
+    private Button loginButton;
+
     public static final int PERMISSION_MULTIPLE_REQUEST = 1;
 
-    private static boolean dialog_show = false;
+    private boolean dialog_show = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +46,27 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         mFingerPrintAuthHelper = FingerPrintAuthHelper.getHelper(this, this);
         messaggio = findViewById(R.id.messaggio);
 
+        riconoscimentoFaccialeButton = findViewById(R.id.riconoscimentoFaccialeButton);
+        loginButton = findViewById(R.id.loginButton);
+
+        //non ancora implementato
+        riconoscimentoFaccialeButton.setVisibility(View.GONE);
+
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(view.getContext(), LoginActivity.class);
+                startActivity(i);
+            }
+        });
+
         // REQUEST PERMISSIONS
 
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) +
-                ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) +
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) +
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) +
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) +
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) +
                 ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS))
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -56,8 +74,10 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CALL_PHONE,
-                            Manifest.permission.INTERNET,
+                            Manifest.permission.READ_PHONE_STATE,
                             Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_NETWORK_STATE,
                             Manifest.permission.SEND_SMS}, PERMISSION_MULTIPLE_REQUEST);
         }
 
@@ -77,31 +97,32 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                 return;
             }
 
-            //login default user
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
-            AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(MainActivity.this);
-
-            builder.setTitle("ATTENZIONE")
-                    .setMessage("Nessun utente registrato\nContinuare ugualmente ?")
-                    .setNegativeButton(R.string.button_procedi, new DialogInterface.OnClickListener() {
+            builder.setTitle(getApplicationContext().getString(R.string.alert_title))
+                    .setMessage(getApplicationContext().getString(R.string.alert_no_user_registered))
+                    .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
 
-                            //Login Default user
-                            Utente utente = new Utente();
-                            utente.createTest();
-
-                            //next page
-                            Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
-                            Gson gson = new Gson();
-                            String utente_json = gson.toJson(utente);
-                            i.putExtra("utente", utente_json);
-
+                            //preferenze
+                            Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
                             startActivity(i);
-
-                            finish();
 
                             dialog_show = false;
 
+                            dialog.dismiss();
+
+                        }
+                    })
+                    .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int i) {
+
+                            dialog_show = false;
+
+                            dialog.dismiss();
+                            finish();
+                            System.exit(1);
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -112,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         } else {
             mFingerPrintAuthHelper.startAuth();
-            messaggio.setText("METTI IL DITO SUL LETTORE IMPRONTE");
+            messaggio.setText(getApplicationContext().getString(R.string.textview_scan_fingerprint));
         }
 
     }
@@ -136,11 +157,13 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
                 if (grantResults.length > 0) {
                     boolean phone_call = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean internet = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean read_phone_state = grantResults[1] == PackageManager.PERMISSION_GRANTED;
                     boolean gps = grantResults[2] == PackageManager.PERMISSION_GRANTED;
-                    boolean send_sms = grantResults[3] == PackageManager.PERMISSION_GRANTED;
+                    boolean coarse = grantResults[3] == PackageManager.PERMISSION_GRANTED;
+                    boolean network_state = grantResults[4] == PackageManager.PERMISSION_GRANTED;
+                    boolean send_sms = grantResults[5] == PackageManager.PERMISSION_GRANTED;
 
-                    if (phone_call && internet && gps && send_sms) {
+                    if (phone_call && read_phone_state && gps && coarse && network_state && send_sms) {
                         //all permissions granted
                         //no actions
 
@@ -180,32 +203,24 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         messaggio.setText("");
 
-        boolean isFirstAccess = Preferences.checkFirstAccess(getApplicationContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
-        if(!isFirstAccess){
-            /* TODO : HANDLE OTHER AUTH METHOD */
-        }
-
-        AlertDialog.Builder builder = new Dialog().getInstance(getApplicationContext()).getBuilder(MainActivity.this);
-
-        builder.setTitle("ATTENZIONE")
-                .setMessage("Nessuna impronta registrata\nContinuare ugualmente ?")
-                .setNegativeButton(R.string.button_procedi , new DialogInterface.OnClickListener() {
+        builder.setTitle(getApplicationContext().getString(R.string.alert_title))
+                .setMessage(getApplicationContext().getString(R.string.alert_no_fingerprints))
+                .setPositiveButton(R.string.button_si , new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
-                        //Login Default user
-                        Utente utente = new Utente();
-                        utente.createTest();
+                        //redirect a pagina inserimento impronte
+                        FingerPrintUtils.openSecuritySettings(MainActivity.this);
 
-                        //next page
-                        Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
-                        Gson gson = new Gson();
-                        String utente_json = gson.toJson(utente);
-                        i.putExtra("utente", utente_json);
-                        startActivity(i);
+                        dialog.dismiss();
 
-                        finish();
-
+                    }
+                })
+                .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int i) {
+                        dialog.dismiss();
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -227,16 +242,9 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         //Authentication successful.
         //handle auth
 
-        Utente utente = Preferences.loadUtente(getApplicationContext());
-
         //next page
-        Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
-        Gson gson = new Gson();
-        String utente_json = gson.toJson(utente);
-        i.putExtra("utente", utente_json);
+        Intent i = new Intent(getApplicationContext(), ChoiceActivity.class);
         startActivity(i);
-
-        finish();
 
     }
 
@@ -245,15 +253,15 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         switch (errorCode) {    //Parse the error code for recoverable/non recoverable error.
             case AuthErrorCodes.CANNOT_RECOGNIZE_ERROR:
                 //Cannot recognize the fingerprint scanned.
-                messaggio.setText("RIPROVA");
+                messaggio.setText(getApplicationContext().getString(R.string.textview_riprova));
                 break;
             case AuthErrorCodes.NON_RECOVERABLE_ERROR:
                 //This is not recoverable error. Try other options for user authentication. like pin, password.
-                messaggio.setText("DAI IL TELEFONO ALL'EDUCATORE");
+                messaggio.setText(getApplicationContext().getString(R.string.textview_error_not_recoverable));
                 break;
             case AuthErrorCodes.RECOVERABLE_ERROR:
                 //Any recoverable error. Display message to the user.
-                messaggio.setText("RIPROVA");
+                messaggio.setText(getApplicationContext().getString(R.string.textview_riprova));
                 break;
         }
     }
@@ -273,10 +281,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         switch (id) {
             case R.id.preferenze:
                 Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-                i.putExtra("backpage", "mainactivity");
                 startActivity(i);
 
-                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);

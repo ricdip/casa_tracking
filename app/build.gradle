@@ -36,4 +36,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
     /* SNACKBAR */
     implementation 'com.android.support:design:26.1.0'
+
+    /* FIREBASE */
+    implementation 'com.google.firebase:firebase-core:15.0.2'
+    implementation "com.google.firebase:firebase-messaging:15.0.2"
 }
+apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "708488453564",
+    "firebase_url": "https://fiery-topic-204015.firebaseio.com",
+    "project_id": "fiery-topic-204015",
+    "storage_bucket": "fiery-topic-204015.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708488453564:android:97f6d068e2d09187",
+        "android_client_info": {
+          "package_name": "it.univaq.casatracking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "708488453564-2buql6f3ur6599u977s7dr0d0mmdg1nv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "it.univaq.casatracking",
+            "certificate_hash": "c94cf784b39e18318b472192b01787da50f30ef5"
+          }
+        },
+        {
+          "client_id": "708488453564-a6e87ui4bkp7vh4iki4u9ab7o1e8bu7h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuU4-8c-ajCI_5N0GYhaHpPxxHJ2QzUIg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "708488453564-a6e87ui4bkp7vh4iki4u9ab7o1e8bu7h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
