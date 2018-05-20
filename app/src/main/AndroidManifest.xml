@@ -10,15 +10,13 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <uses-permission android:name="android.permission.VIBRATE"/>
-
     <uses-feature android:name="android.hardware.location" android:required="true" />
     <uses-feature android:name="android.hardware.location.gps" />
-
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
 
     <application
@@ -29,11 +27,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- GOOGLE MAPS API -->
-        <meta-data android:name="com.google.android.maps.v2.API_KEY"
-            android:value="@string/API_KEY" />
-
-        <!-- /GOOGLE MAPS API -->
 
         <!-- SERVICES -->
         <service android:name=".services.Services" />
@@ -52,6 +45,37 @@
             </intent-filter>
         </service>
 
+
+        <!-- ACTIVITIES -->
+        <activity android:name=".SettingsActivity" android:screenOrientation="portrait"
+            android:label="@string/settings_name"/>
+
+        <activity android:name=".NavigazioneLiberaActivity" android:screenOrientation="portrait"
+            android:label="@string/navigazionelibera_name"/>
+
+        <activity android:name=".LoginActivity" android:screenOrientation="portrait"
+            android:label="@string/login_name"/>
+
+        <activity android:name=".ChoiceActivity" android:screenOrientation="portrait"
+            android:label="@string/choice_name"/>
+
+        <activity android:name=".MainActivity" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+        <!-- METADATA -->
+
+        <!-- GOOGLE MAPS API -->
+        <meta-data android:name="com.google.android.maps.v2.API_KEY"
+            android:value="@string/API_KEY" />
+
+        <!-- /GOOGLE MAPS API -->
+
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -61,23 +85,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
-
-        <!-- ACTIVITIES -->
-        <activity android:name=".SettingsActivity" />
-
-        <activity android:name=".NavigazioneLiberaActivity" />
-
-        <activity android:name=".LoginActivity" />
-
-        <activity android:name=".ChoiceActivity" />
-
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
     </application>
 

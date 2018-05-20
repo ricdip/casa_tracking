@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if(nome.getText().toString().equals("") && numero_telefono.getText().toString().equals("")){
                     //snackbar creation
-                    Snackbar snackbar = Snackbar.make(findViewById(R.id.login_constraint), "CAMPI VUOTI", Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.login_constraint), getApplicationContext().getString(R.string.snackbar_campi_vuoti), Snackbar.LENGTH_LONG);
                     snackbar.show();
 
                     return;
@@ -49,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(i);
                 } else {
                     //snackbar creation
-                    Snackbar snackbar = Snackbar.make(findViewById(R.id.login_constraint), "DATI ERRATI", Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.login_constraint), getApplicationContext().getString(R.string.snackbar_dati_errati), Snackbar.LENGTH_LONG);
                     snackbar.show();
                 }
 

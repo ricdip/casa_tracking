@@ -66,7 +66,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     private static boolean alertIsActive;
 
     /* handler per autocall */
-    private static final int TIME_OUT_AUTOMATIC_CALL = 10000;
+    //auto chiamata in 15 secondi
+    private static final int TIME_OUT_AUTOMATIC_CALL = 15000;
     private static boolean dismissed = false;
 
     private Handler autoCallHandler = new Handler();
@@ -82,16 +83,15 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             if(!dismissed){
 
                 mp.pause();
-
                 v.cancel();
 
                 alertIsActive = false;
                 notify_cancelled = true;
 
-                //sms con coordinate a educatore
+                //sms con coordinate a educatore e successiva chiamata
                 Intent doAlert = new Intent(getApplicationContext(), Services.class);
                 doAlert.setAction(Services.ACTION_ALERT);
-                //https://www.google.com/maps/@42.0458585,13.9318123,15z
+                //pattern link: https://www.google.com/maps/@42.0458585,13.9318123,15z
                 doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + autoCallRunnableLatLng.latitude + "," + autoCallRunnableLatLng.longitude + ",15z");
                 startService(doAlert);
 
@@ -122,6 +122,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     private LocationListener listener = new LocationListener() {
 
         private Marker myMarker;
+        private LatLng loc;
+        MarkerOptions options;
 
         @Override
         public void onLocationChanged(Location location) {
@@ -129,14 +131,14 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             double lat = location.getLatitude();
             double lng = location.getLongitude();
 
-            LatLng loc = new LatLng(lat, lng);
+            loc = new LatLng(lat, lng);
 
             //connection to server
             Request request = new Request();
             request.execute(getApplicationContext(), "monitor", utente, loc);
 
             //opzioni
-            MarkerOptions options = new MarkerOptions();
+            options = new MarkerOptions();
 
             options.position(loc);
             options.title("SONO QUI");
@@ -157,11 +159,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             try {
 
                 String res = request.get();
-
-                //print response (debug)
-
                 JSONObject json = new JSONObject(res);
 
+                //print response (debug)
                 if(json.has("error")){
                     String error = json.getString("error");
                     Log.d(TAG, "Response error" + error);
@@ -196,7 +196,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         @Override
         public void onProviderDisabled(String provider) {
-            Toast.makeText(getApplicationContext(), "ATTIVA LA LOCALIZZAZIONE GPS", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -221,7 +221,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         //get utente
         utente = Preferences.loadUtente(getApplicationContext());
 
-        //boolean notify per area non sicura
+        //boolean notify per allertare utente dell' area non sicura
         notify_cancelled = false;
 
         //boolean alert is active
@@ -233,11 +233,12 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         //creazione vibrazione per alert
         v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-
         //vibrate pattern
         mVibratePattern = new long[]{0, 400, 200, 400};
 
+        //
         //setting mapfragment
+        //
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -251,7 +252,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         if(!Request.isConnected(getApplicationContext())){
             //snackbar creation
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_constraint), "NESSUNA CONNESSIONE INTERNET", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazionelibera_constraint), getApplicationContext().getString(R.string.snackbar_no_internet), Snackbar.LENGTH_LONG);
             snackbar.show();
 
             //preparo intent per ripresa connessione
@@ -328,10 +329,10 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         mMap = googleMap;
         //disabilita gestures sulla mappa
         mMap.getUiSettings().setAllGesturesEnabled(false);
-
         // Sets the map type to be "normal"
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     }
+
 
     /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
     private synchronized void alert(final LatLng loc){
@@ -346,8 +347,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         //messaggio sonoro
         mp.start();
 
-        // -1 : Do not repeat this pattern
-        // pass 0 if you want to repeat this pattern from 0th index
+        // -1 : Do not repeat this pattern, 0 if you want to repeat this pattern from 0th index
         v.vibrate(mVibratePattern, 0);
 
         dismissed = false;
@@ -364,7 +364,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         mp.pause();
                         v.cancel();
 
-                        //alert a educatore
+                        //alert a educatore con send sms
                         Intent doAlert = new Intent(getApplicationContext(), Services.class);
                         doAlert.setAction(Services.ACTION_ALERT);
                         //https://www.google.com/maps/@42.0458585,13.9318123,15z
@@ -384,8 +384,13 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
                         mp.pause();
-                        //mp.release();
                         v.cancel();
+
+                        //solo avviso con sms all'educatore che utente è fuori area sicura
+                        Intent sms = new Intent(getApplicationContext(), Services.class);
+                        sms.setAction(Services.ACTION_SEND_SMS);
+                        sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA: " + "https://www.google.com/maps/@" + loc.latitude + "," + loc.longitude + ",15z");
+                        startService(sms);
 
                         notify_cancelled = true;
                         dismissed = true;
