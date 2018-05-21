@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.multidots.fingerprintauth.AuthErrorCodes;
 import com.multidots.fingerprintauth.FingerPrintAuthCallback;
 import com.multidots.fingerprintauth.FingerPrintAuthHelper;
@@ -88,6 +89,11 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     @Override
     protected void onResume() {
         super.onResume();
+
+        /* print token di firebase (debug) */
+        String token = FirebaseInstanceId.getInstance().getToken();
+        System.out.println("FIREBASE TOKEN: " + token);
+        /* /print token di firebase (debug) */
 
         boolean isFirstAccess = Preferences.checkFirstAccess(getApplicationContext());
 
@@ -191,8 +197,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     @Override
     public void onNoFingerPrintHardwareFound() {
         //Device does not have finger print scanner.
-
         //other auth method
+        messaggio.setText(getApplicationContext().getString(R.string.textview_no_hardware_for_scan_fingerprint));
 
     }
 
@@ -201,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         //There are no finger prints registered on this device.
         //alert dialog e login default user
 
-        messaggio.setText("");
+        messaggio.setText(getApplicationContext().getString(R.string.textview_no_fingerprint_registered));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
@@ -232,8 +238,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     @Override
     public void onBelowMarshmallow() {
         //Device running below API 23 version of android that does not support finger print authentication.
-
         //other auth method
+        messaggio.setText(getApplicationContext().getString(R.string.textview_no_hardware_for_scan_fingerprint));
 
     }
 

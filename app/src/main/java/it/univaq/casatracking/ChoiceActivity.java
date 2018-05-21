@@ -24,6 +24,8 @@ public class ChoiceActivity extends AppCompatActivity {
         scegliPercorso = findViewById(R.id.scegliPercorsoButton);
         callButton = findViewById(R.id.choice_callButton);
 
+        //REMIND: dopo 60 secondi di inattività in ScegliPercorso redirect
+        //a NavigazioneLiberaActivity
         //non ancora implementato
         scegliPercorso.setVisibility(View.GONE);
 

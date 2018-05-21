@@ -13,9 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -58,6 +56,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
     private Utente utente;
     private boolean notify_cancelled;
+
+    //alert user with alert sound and vibration
     private MediaPlayer mp;
     private Vibrator v;
     private long[] mVibratePattern;
@@ -95,14 +95,14 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + autoCallRunnableLatLng.latitude + "," + autoCallRunnableLatLng.longitude + ",15z");
                 startService(doAlert);
 
-            } else {
-                //dialog dismissed
-                //no action
-
             }
+
+            //if dialog dismissed
+            //no action
 
         }
     };
+    /* END handler per autocall */
 
     /* receiver for internet connection changes */
     private static boolean isReceiverRegistered = false;
@@ -116,7 +116,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         }
     };
-
+    /* END receiver for internet connection changes */
 
     /* location change listener */
     private LocationListener listener = new LocationListener() {
@@ -161,12 +161,13 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 String res = request.get();
                 JSONObject json = new JSONObject(res);
 
-                //print response (debug)
+                // print response (debug)
                 if(json.has("error")){
                     String error = json.getString("error");
                     Log.d(TAG, "Response error" + error);
                     return;
                 }
+                // /print response (debug)
 
                 String alert = json.getString("alert");
 
@@ -179,9 +180,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 e.printStackTrace();
             }
 
-
         }
-
         //END onLocationChanged
 
         @Override
@@ -199,6 +198,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_LONG).show();
         }
     };
+
+
+    //END ACTION HANDLERS
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,8 +230,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         alertIsActive = false;
 
         //creazione ring per alert
-        Uri alert_ring = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        mp = MediaPlayer.create(getApplicationContext(), alert_ring);
+        //Uri alert_ring = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        mp = MediaPlayer.create(getApplicationContext(), R.raw.alert);
+        mp.setLooping(true);
 
         //creazione vibrazione per alert
         v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
@@ -305,23 +308,6 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         mp.release();
     }
 
-    /* Richiedi permessi */
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 101) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                //minTime in ms
-                //minDistance in m
-                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
-
-            }
-        }
-    }
-
 
     /* metodo chiamato quando la mappa è pronta */
     @Override
@@ -344,9 +330,10 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         alertIsActive = true;
 
 
-        //messaggio sonoro
+        //start alert sonoro
         mp.start();
 
+        //start vibrazione
         // -1 : Do not repeat this pattern, 0 if you want to repeat this pattern from 0th index
         v.vibrate(mVibratePattern, 0);
 
@@ -409,6 +396,24 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         autoCallRunnableLatLng = loc;
         autoCallHandler.postDelayed(autoCallRunnable, TIME_OUT_AUTOMATIC_CALL);
 
+    }
+
+
+    /* Richiedi permessi */
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 101) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                //minTime in ms
+                //minDistance in m
+                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
+
+            }
+        }
     }
 
 }

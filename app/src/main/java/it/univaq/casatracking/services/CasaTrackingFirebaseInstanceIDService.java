@@ -27,6 +27,7 @@ public class CasaTrackingFirebaseInstanceIDService extends FirebaseInstanceIdSer
         // Get updated InstanceID token.
         String token = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + token);
+        //System.out.println("Refreshed token: " + token);
 
         //sends this token to the server
         // If you want to send messages to this application instance or
@@ -39,13 +40,16 @@ public class CasaTrackingFirebaseInstanceIDService extends FirebaseInstanceIdSer
         //sendRegistrationToServer(token);
     }
 
-    private void sendRegistrationToServer(String token) {
+    private boolean sendRegistrationToServer(String token) {
+
+        boolean success = false;
+        HttpURLConnection connection = null;
 
         try {
 
             URL url = new URL(getApplicationContext().getString(R.string.server_path));
 
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoOutput(true);
             connection.setDoInput(true);
@@ -59,14 +63,21 @@ public class CasaTrackingFirebaseInstanceIDService extends FirebaseInstanceIdSer
             connection.connect();
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                // Do whatever you want after the
-                // token is successfully stored on the server
+                success = true;
+            } else {
+                success = false;
             }
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if(connection != null)
+                connection.disconnect();
         }
+
+        return success;
+
     }
 }
