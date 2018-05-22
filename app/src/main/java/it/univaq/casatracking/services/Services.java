@@ -68,16 +68,20 @@ public class Services extends IntentService {
     }
 
     private void sendSMS(String body){
-        /*
-        APRE MESSAGGI PER MANDARE SMS!!
-        Uri uri = Uri.parse("smsto:" + Preferences.loadUtente(getApplicationContext()).getNumeroTelefonoEducatore());
-        Intent smsIntent = new Intent(Intent.ACTION_SENDTO, uri);
-        smsIntent.putExtra("sms_body", body);
-        */
 
         String phoneNumber = Preferences.loadUtente(getApplicationContext()).getNumeroTelefonoEducatore();
         SmsManager smsManager = SmsManager.getDefault();
-        smsManager.sendTextMessage(phoneNumber, null, body, null, null);
+
+        if(smsManager == null){
+            //APRE MESSAGGI PER MANDARE SMS!!
+            Uri uri = Uri.parse("smsto:" + phoneNumber);
+            Intent smsIntent = new Intent(Intent.ACTION_SENDTO, uri);
+            smsIntent.putExtra("sms_body", body);
+
+        } else {
+            //messaggio automatico
+            smsManager.sendTextMessage(phoneNumber, null, body, null, null);
+        }
 
     }
 

@@ -98,9 +98,11 @@ public class Request extends AsyncTask<Object, Void, String> {
 
         } catch(IOException e){
             e.printStackTrace();
+
         } finally {
             if(con != null)
                 con.disconnect();
+
         }
 
         return result;

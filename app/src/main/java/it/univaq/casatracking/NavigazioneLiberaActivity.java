@@ -12,11 +12,9 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -24,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -42,10 +41,13 @@ import java.util.concurrent.ExecutionException;
 
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
+import it.univaq.casatracking.utils.Player;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
+
+    /* TODO : debug player and wake up */
 
     private static final String TAG = "NavigazioneLibera";
 
@@ -56,11 +58,6 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
     private Utente utente;
     private boolean notify_cancelled;
-
-    //alert user with alert sound and vibration
-    private MediaPlayer mp;
-    private Vibrator v;
-    private long[] mVibratePattern;
 
     //alert only called once
     private static boolean alertIsActive;
@@ -82,8 +79,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             if(!dismissed){
 
-                mp.pause();
-                v.cancel();
+                Player.getInstance(getApplicationContext()).stopPlaying();
 
                 alertIsActive = false;
                 notify_cancelled = true;
@@ -123,7 +119,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         private Marker myMarker;
         private LatLng loc;
-        MarkerOptions options;
+        MarkerOptions options = new MarkerOptions();
 
         @Override
         public void onLocationChanged(Location location) {
@@ -138,7 +134,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             request.execute(getApplicationContext(), "monitor", utente, loc);
 
             //opzioni
-            options = new MarkerOptions();
+            //options = new MarkerOptions();
 
             options.position(loc);
             options.title("SONO QUI");
@@ -229,15 +225,6 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         //boolean alert is active
         alertIsActive = false;
 
-        //creazione ring per alert
-        //Uri alert_ring = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        mp = MediaPlayer.create(getApplicationContext(), R.raw.alert);
-        mp.setLooping(true);
-
-        //creazione vibrazione per alert
-        v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-        //vibrate pattern
-        mVibratePattern = new long[]{0, 400, 200, 400};
 
         //
         //setting mapfragment
@@ -304,8 +291,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mp.stop();
-        mp.release();
+
+        mManager.removeUpdates(listener);
+        mManager = null;
     }
 
 
@@ -329,13 +317,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         }
         alertIsActive = true;
 
-
-        //start alert sonoro
-        mp.start();
-
-        //start vibrazione
-        // -1 : Do not repeat this pattern, 0 if you want to repeat this pattern from 0th index
-        v.vibrate(mVibratePattern, 0);
+        Player.getInstance(getApplicationContext()).startPlaying();
 
         dismissed = false;
 
@@ -348,8 +330,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
-                        mp.pause();
-                        v.cancel();
+                        Player.getInstance(getApplicationContext()).stopPlaying();
 
                         //alert a educatore con send sms
                         Intent doAlert = new Intent(getApplicationContext(), Services.class);
@@ -363,6 +344,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         dialog.dismiss();
 
                         alertIsActive = false;
+                        //cancel wake up
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                         autoCallHandler.removeCallbacks(autoCallRunnable);
 
                     }
@@ -370,8 +353,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        mp.pause();
-                        v.cancel();
+
+                        Player.getInstance(getApplicationContext()).stopPlaying();
 
                         //solo avviso con sms all'educatore che utente è fuori area sicura
                         Intent sms = new Intent(getApplicationContext(), Services.class);
@@ -384,6 +367,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         dialog.dismiss();
 
                         alertIsActive = false;
+
+                        //cancel wake up
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                         autoCallHandler.removeCallbacks(autoCallRunnable);
                     }
                 })
@@ -391,6 +377,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setCancelable(false)
                 .show();
+
+        //wake up phone
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
         // autocall in TIME_OUT_AUTOMATIC_CALL ms
         autoCallRunnableLatLng = loc;

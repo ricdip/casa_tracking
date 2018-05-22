@@ -8,7 +8,6 @@ import com.google.firebase.iid.FirebaseInstanceIdService;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import it.univaq.casatracking.R;
@@ -68,16 +67,15 @@ public class CasaTrackingFirebaseInstanceIDService extends FirebaseInstanceIdSer
                 success = false;
             }
 
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+
         } finally {
             if(connection != null)
                 connection.disconnect();
+
         }
 
         return success;
-
     }
 }
