@@ -47,7 +47,7 @@ import it.univaq.casatracking.utils.Request;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    /* TODO : debug player and wake up */
+    /* TODO : tempo chiamata handler locationrequest */
 
     private static final String TAG = "NavigazioneLibera";
 
@@ -91,6 +91,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + autoCallRunnableLatLng.latitude + "," + autoCallRunnableLatLng.longitude + ",15z");
                 startService(doAlert);
 
+                //cancel wake up
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
             }
 
             //if dialog dismissed
@@ -121,8 +124,23 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         private LatLng loc;
         MarkerOptions options = new MarkerOptions();
 
+        boolean isGPSready = false;
+
         @Override
         public void onLocationChanged(Location location) {
+
+            String provider = location.getProvider();
+
+            if(provider.equals(LocationManager.GPS_PROVIDER)){
+                if(!isGPSready)
+                    isGPSready = true;
+            } else if(provider.equals(LocationManager.NETWORK_PROVIDER)){
+                //gps is better
+                if(isGPSready)
+                    return;
+                //gps not ready, use network
+            }
+
 
             double lat = location.getLatitude();
             double lng = location.getLongitude();
@@ -264,8 +282,10 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         if(checkPerms == PackageManager.PERMISSION_GRANTED){
             //location perms granted
-
-            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
+            //network
+            mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3*1000, 0, listener);
+            //gps
+            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3*1000, 0, listener);
 
         } else {
             //location perms not granted, request perms
@@ -399,7 +419,10 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
                 //minTime in ms
                 //minDistance in m
-                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
+                //network
+                mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3*1000, 0, listener);
+                //gps
+                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3*1000, 0, listener);
 
             }
         }
