@@ -47,8 +47,6 @@ import it.univaq.casatracking.utils.Request;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    /* TODO : tempo chiamata handler locationrequest */
-
     private static final String TAG = "NavigazioneLibera";
 
     private GoogleMap mMap;
@@ -283,9 +281,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         if(checkPerms == PackageManager.PERMISSION_GRANTED){
             //location perms granted
             //network
-            mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3*1000, 0, listener);
+            mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5*1000, 0, listener);
             //gps
-            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3*1000, 0, listener);
+            mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5*1000, 0, listener);
 
         } else {
             //location perms not granted, request perms
@@ -312,8 +310,10 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     protected void onDestroy() {
         super.onDestroy();
 
-        mManager.removeUpdates(listener);
-        mManager = null;
+        if(mManager != null){
+            mManager.removeUpdates(listener);
+            mManager = null;
+        }
     }
 
 
@@ -329,7 +329,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
 
     /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
-    private synchronized void alert(final LatLng loc){
+    private void alert(final LatLng loc){
 
         /* BOOLEAN PER ATOMICITA' DELLA FUNZIONE ALERT */
         if(alertIsActive){
@@ -420,9 +420,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 //minTime in ms
                 //minDistance in m
                 //network
-                mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3*1000, 0, listener);
+                mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5*1000, 0, listener);
                 //gps
-                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3*1000, 0, listener);
+                mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5*1000, 0, listener);
 
             }
         }
