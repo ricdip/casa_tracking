@@ -28,6 +28,8 @@ import it.univaq.casatracking.utils.Preferences;
 
 public class MainActivity extends AppCompatActivity implements FingerPrintAuthCallback {
 
+    //TODO : Prova login automatico
+
     /* fingerprint authentication object */
     private FingerPrintAuthHelper mFingerPrintAuthHelper;
     private TextView messaggio;
@@ -56,8 +58,21 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(view.getContext(), LoginActivity.class);
-                startActivity(i);
+                //se il login è stato fatto in passato, login automatico al click (redirect a ChoiceActivity)
+                //altrimenti apriamo LoginActivity
+
+                if(Preferences.checkAutomaticLoginNotEnabled(getApplicationContext())){
+                    //automatic login not enabled
+                    Intent i = new Intent(view.getContext(), LoginActivity.class);
+                    startActivity(i);
+
+                } else {
+                    //automatic login enabled
+                    Intent i = new Intent(view.getContext(), ChoiceActivity.class);
+                    startActivity(i);
+
+                }
+
             }
         });
 
@@ -138,8 +153,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
             dialog_show = true;
 
         } else {
-            mFingerPrintAuthHelper.startAuth();
             messaggio.setText(getApplicationContext().getString(R.string.textview_scan_fingerprint));
+            mFingerPrintAuthHelper.startAuth();
         }
 
     }
@@ -151,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         mFingerPrintAuthHelper.stopAuth();
 
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -205,33 +219,45 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     @Override
     public void onNoFingerPrintRegistered() {
         //There are no finger prints registered on this device.
-        //alert dialog e login default user
+        //alert dialog if is first time
 
-        messaggio.setText(getApplicationContext().getString(R.string.textview_no_fingerprint_registered));
+        if(Preferences.checkNoFingerprintRegisteredFirstTime(getApplicationContext())){
+            //first time no fingerprint registered
+            //show popup
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
-        builder.setTitle(getApplicationContext().getString(R.string.alert_title))
-                .setMessage(getApplicationContext().getString(R.string.alert_no_fingerprints))
-                .setPositiveButton(R.string.button_si , new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+            builder.setTitle(getApplicationContext().getString(R.string.alert_title))
+                    .setMessage(getApplicationContext().getString(R.string.alert_no_fingerprints))
+                    .setPositiveButton(R.string.button_si , new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
 
-                        //redirect a pagina inserimento impronte
-                        FingerPrintUtils.openSecuritySettings(MainActivity.this);
+                            //redirect a pagina inserimento impronte
+                            FingerPrintUtils.openSecuritySettings(MainActivity.this);
 
-                        dialog.dismiss();
+                            dialog.dismiss();
 
-                    }
-                })
-                .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int i) {
-                        dialog.dismiss();
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setCancelable(false)
-                .show();
+                        }
+                    })
+                    .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int i) {
+
+                            messaggio.setText(getApplicationContext().getString(R.string.textview_no_fingerprint_registered));
+                            dialog.dismiss();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setCancelable(false)
+                    .show();
+
+            Preferences.cancelNoFingerprintRegisteredFirstTime(getApplicationContext());
+
+        } else {
+            //else no action, only show in TextView messaggio
+            messaggio.setText(getApplicationContext().getString(R.string.textview_no_fingerprint_registered));
+
+        }
 
     }
 

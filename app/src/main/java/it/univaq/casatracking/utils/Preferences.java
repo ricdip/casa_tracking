@@ -77,4 +77,47 @@ public class Preferences {
         editor.apply();
     }
 
+    public static boolean checkNoFingerprintRegisteredFirstTime(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean noFingerprintRegisteredFirstTime = pref.getBoolean("no_fingerprint_registered_first_time", true);
+
+        return noFingerprintRegisteredFirstTime;
+    }
+
+    public static void cancelNoFingerprintRegisteredFirstTime(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putBoolean("no_fingerprint_registered_first_time", false);
+
+        editor.apply();
+    }
+
+    public static boolean checkAutomaticLoginNotEnabled(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean noFingerprintRegisteredFirstTime = pref.getBoolean("automatic_login_not_enabled", true);
+
+        return noFingerprintRegisteredFirstTime;
+    }
+
+    public static void cancelAutomaticLoginNotEnabled(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putBoolean("automatic_login_not_enabled", false);
+
+        editor.apply();
+    }
+
+    public static void setAutomaticLoginNotEnabled(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putBoolean("automatic_login_not_enabled", true);
+
+        editor.apply();
+    }
+
 }

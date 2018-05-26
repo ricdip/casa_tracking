@@ -45,6 +45,9 @@ public class LoginActivity extends AppCompatActivity {
                 boolean AcceptLogin = checkLogin(nome.getText().toString(), numero_telefono.getText().toString());
 
                 if(AcceptLogin){
+                    //settiamo flag automatic_login su enabled
+                    Preferences.cancelAutomaticLoginNotEnabled(getApplicationContext());
+
                     Intent i = new Intent(v.getContext(), ChoiceActivity.class);
                     startActivity(i);
                 } else {

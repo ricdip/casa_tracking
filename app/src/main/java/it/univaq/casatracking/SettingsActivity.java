@@ -56,6 +56,9 @@ public class SettingsActivity extends AppCompatActivity {
                     if(Preferences.checkFirstAccess(getContext()))
                         Preferences.cancelFirstAccess(getContext());
 
+                    if(!Preferences.checkAutomaticLoginNotEnabled(getContext()))
+                        Preferences.setAutomaticLoginNotEnabled(getContext());
+
                     preference.setSummary(nome_utente);
                     return true;
                 }
@@ -70,6 +73,9 @@ public class SettingsActivity extends AppCompatActivity {
                     if(Preferences.checkFirstAccess(getContext()))
                         Preferences.cancelFirstAccess(getContext());
 
+                    if(!Preferences.checkAutomaticLoginNotEnabled(getContext()))
+                        Preferences.setAutomaticLoginNotEnabled(getContext());
+
                     preference.setSummary(numero_telefono);
                     return true;
                 }
@@ -83,6 +89,9 @@ public class SettingsActivity extends AppCompatActivity {
                     //Preferences.save(getContext(), "numero_telefono_educatore", numero_telefono_educatore);
                     if(Preferences.checkFirstAccess(getContext()))
                         Preferences.cancelFirstAccess(getContext());
+
+                    if(!Preferences.checkAutomaticLoginNotEnabled(getContext()))
+                        Preferences.setAutomaticLoginNotEnabled(getContext());
 
                     preference.setSummary(numero_telefono_educatore);
                     return true;
