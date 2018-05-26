@@ -37,6 +37,10 @@ public class Request extends AsyncTask<Object, Void, String> {
             case "monitor":
                 result = doMonitorRequest(context, utente.getNumeroTelefono(), loc.latitude, loc.longitude);
                 break;
+
+            case "get_percorsi":
+                result = doGetPercorsiRequest(context, utente.getNumeroTelefono());
+                break;
         }
 
         return result;
@@ -51,6 +55,72 @@ public class Request extends AsyncTask<Object, Void, String> {
 
         //get request
         address += "?task=monitor" + "&phone=" + phone + "&lat=" + lat + "&lon=" + lon;
+
+        //send to server
+        HttpURLConnection con = null;
+
+        String result = "";
+
+        try {
+
+            URL url = new URL(address);
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+
+
+            //read response
+            int responseCode = con.getResponseCode();
+            boolean success = false;
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                success = true;
+            } else {
+                success = false;
+            }
+
+            if(!success){
+                return "{\"error\":\"code " + responseCode + "\"}";
+            }
+
+            /*
+            System.out.println("\nSending 'GET' request to URL : " + address);
+            System.out.println("Response Code : " + responseCode + "\nsuccess: " + success);
+            */
+
+            //read response
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+
+            result = response.toString();
+
+        } catch(IOException e){
+            e.printStackTrace();
+
+        } finally {
+            if(con != null)
+                con.disconnect();
+
+        }
+
+        return result;
+    }
+
+    private String doGetPercorsiRequest(Context context, String phone){
+
+        //handle connection, request and return response
+
+        //address
+        String address = context.getString(R.string.server_path);
+
+        //get request
+        address += "?task=get_percorsi" + "&phone=" + phone;
 
         //send to server
         HttpURLConnection con = null;
