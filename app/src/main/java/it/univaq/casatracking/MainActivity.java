@@ -28,8 +28,6 @@ import it.univaq.casatracking.utils.Preferences;
 
 public class MainActivity extends AppCompatActivity implements FingerPrintAuthCallback {
 
-    //TODO : Prova login automatico
-
     /* fingerprint authentication object */
     private FingerPrintAuthHelper mFingerPrintAuthHelper;
     private TextView messaggio;

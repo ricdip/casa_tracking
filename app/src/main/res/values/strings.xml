@@ -4,7 +4,7 @@
 
     <string name="login_name">Login</string>
     <string name="choice_name">Casa+ Tracking</string>
-    <string name="navigazionelibera_name">Navigazione</string>
+    <string name="navigazionelibera_name">Navigazione Libera</string>
     <string name="settings_name">Preferenze</string>
 
     <!-- GOOGLE MAPS API KEY -->
