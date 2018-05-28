@@ -34,10 +34,8 @@
     <string name="login_title">LOGIN</string>
 
     <string name="alert_title">ATTENZIONE</string>
-    <string name="alert_no_user_registered">Nessun utente registrato
-Andare alle preferenze ?</string>
-    <string name="alert_no_fingerprints">Nessuna impronta registrata
-inserirle ?</string>
+    <string name="alert_no_user_registered">Nessun utente registrato\nAndare alle preferenze ?</string>
+    <string name="alert_no_fingerprints">Nessuna impronta registrata\ninserirle ?</string>
     <string name="alert_call_educatore">CHIAMARE L\'EDUCATORE ?</string>
 
     <string name="textview_riprova">RIPROVA</string>
