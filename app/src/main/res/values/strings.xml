@@ -50,5 +50,7 @@
     <string name="snackbar_no_internet">NESSUNA CONNESSIONE INTERNET</string>
     <string name="snackbar_campi_vuoti">CAMPI VUOTI</string>
     <string name="snackbar_dati_errati">DATI ERRATI</string>
+    <string name="snackbar_download_completato">DOWNLOAD COMPLETATO</string>
+    <string name="snackbar_no_data">NESSUN PERCORSO TROVATO</string>
 
 </resources>

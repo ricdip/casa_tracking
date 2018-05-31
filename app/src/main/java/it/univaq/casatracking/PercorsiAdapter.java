@@ -1,6 +1,7 @@
 package it.univaq.casatracking;
 
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,9 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class PercorsiAdapter extends RecyclerView.Adapter<PercorsiAdapter.ViewHolder> {
-
-
-    /* TODO : INCOMPLETE CLASS PercorsiAdapter */
 
     private JSONArray data;
 
@@ -30,9 +28,11 @@ public class PercorsiAdapter extends RecyclerView.Adapter<PercorsiAdapter.ViewHo
         if(item == null)
             return;
 
-        holder.title.setText(item.optString("nome", "- - -"));
-        //holder.subtitle.setText(item.optString("tipo", "- - -"));
-        holder.subtitle.setText("Durata: " + item.optString("tempo", "- - -"));
+        String title_string = item.optString("nome", "- - -");
+        holder.title.setText(title_string);
+
+        String subtitle_string = "Durata: " + item.optString("tempo", "- - -");
+        holder.subtitle.setText(subtitle_string);
     }
 
     @Override
@@ -63,10 +63,10 @@ public class PercorsiAdapter extends RecyclerView.Adapter<PercorsiAdapter.ViewHo
         @Override
         public void onClick(View v) {
             JSONObject percorso = data.optJSONObject(getAdapterPosition());
-            //Intent intent = new Intent(v.getContext(), CheckpointHubActivity.class);
-            //intent.putExtra("checkpoint", checkpoint.toString());
-            //intent.putExtra("source", "adapter");
-            //v.getContext().startActivity(intent);
+            Intent intent = new Intent(v.getContext(), POIActivity.class);
+            intent.putExtra("percorso", percorso.toString());
+
+            v.getContext().startActivity(intent);
         }
     }
 

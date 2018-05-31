@@ -25,8 +25,11 @@ public class Request extends AsyncTask<Object, Void, Object> {
 
         Context context = (Context) objects[0];
         String request = (String) objects[1];
-        Utente utente = (Utente) objects[2];
-        LatLng loc = (LatLng) objects[3];
+        Utente utente;
+        LatLng loc;
+        int id_percorso;
+        String alert;
+        String nome_foto;
 
         Object result = "";
 
@@ -36,21 +39,27 @@ public class Request extends AsyncTask<Object, Void, Object> {
 
         switch (request){
             case "monitor":
+                utente = (Utente) objects[2];
+                loc = (LatLng) objects[3];
                 result = doMonitorRequest(context, utente.getNumeroTelefono(), loc.latitude, loc.longitude);
                 break;
 
             case "get_percorsi":
+                utente = (Utente) objects[2];
                 result = doGetPercorsiRequest(context, utente.getNumeroTelefono());
                 break;
 
             case "navigazione":
-                int id_percorso = Integer.parseInt((String) objects[4]);
-                String alert = (String) objects[5];
+                utente = (Utente) objects[2];
+                loc = (LatLng) objects[3];
+                id_percorso = Integer.parseInt((String) objects[4]);
+                alert = (String) objects[5];
                 result = doNavigazioneRequest(context, utente.getNumeroTelefono(), loc.latitude, loc.longitude, id_percorso, alert);
                 break;
 
             case "download_image":
-                String nome_foto = (String) objects[4];
+                nome_foto = (String) objects[2];
+                loc = (LatLng) objects[3];
                 Bitmap bmp = doDownloadImageRequest(context,nome_foto, loc.latitude, loc.longitude);
 
                 if(bmp == null)
