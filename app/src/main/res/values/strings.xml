@@ -12,6 +12,7 @@
 
     <!-- SERVER -->
     <string name="server_path">http://www.smartengineers.eu/joomla/components/com_locationtracking/script/script.php</string>
+    <string name="poi_images_path">http://www.smartengineers.eu/joomla/images/poi/</string>
 
     <!-- STRINGS -->
     <string name="preferenze">Preferenze</string>

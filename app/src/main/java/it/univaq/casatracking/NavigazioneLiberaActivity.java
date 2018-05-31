@@ -170,7 +170,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             //retrieve response
             try {
 
-                String res = request.get();
+                String res = (String) request.get();
                 JSONObject json = new JSONObject(res);
 
                 // print response (debug)
