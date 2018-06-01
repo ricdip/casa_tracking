@@ -52,5 +52,6 @@
     <string name="snackbar_dati_errati">DATI ERRATI</string>
     <string name="snackbar_download_completato">DOWNLOAD COMPLETATO</string>
     <string name="snackbar_no_data">NESSUN PERCORSO TROVATO</string>
+    <string name="snackbar_download_percorsi_error">ERRORE NEL DOWNLOAD DEI PERCORSI</string>
 
 </resources>

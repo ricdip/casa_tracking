@@ -20,7 +20,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -34,16 +33,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.concurrent.ExecutionException;
-
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Player;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
+import it.univaq.casatracking.utils.RequestHandler;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -145,10 +140,6 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             loc = new LatLng(lat, lng);
 
-            //connection to server
-            Request request = new Request();
-            request.execute(getApplicationContext(), "monitor", utente, loc);
-
             //opzioni
             //options = new MarkerOptions();
 
@@ -168,28 +159,16 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             }
 
             //retrieve response
-            try {
+            String alert = RequestHandler.monitor(getApplicationContext(), utente, loc);
 
-                String res = (String) request.get();
-                JSONObject json = new JSONObject(res);
+            // if error return
+            if(alert == null) {
+                return;
+            }
 
-                // print response (debug)
-                if(json.has("error")){
-                    String error = json.getString("error");
-                    Log.d(TAG, "Response error" + error);
-                    return;
-                }
-                // /print response (debug)
-
-                String alert = json.getString("alert");
-
-                if(alert.equals("1") && (!notify_cancelled)){
-                    //utente fuori area sicura
-                    alert(loc);
-                }
-
-            } catch(InterruptedException|ExecutionException|JSONException e){
-                e.printStackTrace();
+            if(alert.equals("1") && (!notify_cancelled)){
+                //utente fuori area sicura
+                alert(loc);
             }
 
         }

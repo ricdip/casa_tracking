@@ -14,12 +14,11 @@ import android.widget.Button;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.concurrent.ExecutionException;
-
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
+import it.univaq.casatracking.utils.RequestHandler;
 
 public class ScegliPercorsoActivity extends AppCompatActivity {
 
@@ -69,12 +68,21 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
                 return;
             }
 
-            Request request = new Request();
-            request.execute(getApplicationContext(), "get_percorsi", utente, null);
-
+            //progress
             showProgress();
 
-            String result = (String) request.get();
+            //download percorsi
+            String result = RequestHandler.getPercorsi(getApplicationContext(), utente);
+
+            if(result == null){
+                dismissProgress();
+                //snackbar creation
+                Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_download_percorsi_error), Snackbar.LENGTH_LONG);
+                snackbar.show();
+
+                return;
+            }
+
             JSONArray array = new JSONArray(result);
 
             if(array.length() == 0){
@@ -89,6 +97,7 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
             PercorsiAdapter percorsi_adapter = new PercorsiAdapter(array);
 
             dismissProgress();
+            // /progress
 
             recyclerView.setAdapter(percorsi_adapter);
 
@@ -96,7 +105,7 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
             Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_download_completato), Snackbar.LENGTH_LONG);
             snackbar.show();
 
-        } catch(InterruptedException|ExecutionException|JSONException e){
+        } catch(JSONException e){
             e.printStackTrace();
         }
 

@@ -2,31 +2,49 @@ package it.univaq.casatracking.model;
 
 public class POI {
 
-    private int id;
+    private String id;
     private String nome;
-    //private String the_geom;
-    private int id_percorso;
+    private String the_geom;
+    private String id_percorso;
     private String foto;
     private String descrizione;
 
-    public POI(int id, String nome, int id_percorso, String foto, String descrizione){
+    public POI(String id, String nome, String id_percorso, String foto, String descrizione){
         this.id = id;
         this.nome = nome;
         this.id_percorso = id_percorso;
         this.foto = foto;
         this.descrizione = descrizione;
+
+        this.the_geom = "";
     }
 
     public POI(){
-        this.id = 0;
+        this.id = "" + 0 + "";
         this.nome = "";
-        this.id_percorso = 0;
+        this.id_percorso = "" + 0 + "";
         this.foto = "";
         this.descrizione = "";
+
+        this.the_geom = "";
+    }
+
+    public POI(String id, String the_geom, String nome, String id_percorso, String foto, String descrizione){
+        this.id = id;
+        this.nome = nome;
+        this.id_percorso = id_percorso;
+        this.foto = foto;
+        this.descrizione = descrizione;
+
+        this.the_geom = the_geom;
     }
 
     public int getId(){
-        return this.id;
+        return Integer.parseInt(this.id);
+    }
+
+    public String getThe_geom(){
+        return this.the_geom;
     }
 
     public String getNome(){
@@ -34,7 +52,7 @@ public class POI {
     }
 
     public int getId_percorso(){
-        return this.id_percorso;
+        return Integer.parseInt(this.id_percorso);
     }
 
     public String getFoto(){
@@ -46,15 +64,19 @@ public class POI {
     }
 
 
-    public void setId(int id){
+    public void setId(String id){
         this.id = id;
+    }
+
+    public void getThe_geom(String the_geom){
+        this.the_geom = the_geom;
     }
 
     public void setNome(String nome){
         this.nome = nome;
     }
 
-    public void setId_percorso(int id_percorso){
+    public void setId_percorso(String id_percorso){
         this.id_percorso = id_percorso;
     }
 
