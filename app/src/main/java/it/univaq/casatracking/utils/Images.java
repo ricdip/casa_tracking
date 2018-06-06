@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,8 @@ public class Images {
     private static File cacheDirectory;
     private static String cacheDirectoryPath;
 
-    private static final long MAX_SIZE = 5242880L; // 5MB
+    //private static final long MAX_SIZE = 5242880L; // 5MB
+    private static final long MAX_SIZE = 524288000L; // 500MB
 
     public static Images getInstance(Context ctx){
         context = ctx;
@@ -30,6 +32,12 @@ public class Images {
             images = new Images();
 
         return images;
+    }
+
+    public String getCacheDirectoryPath(){
+        //clear cache if cache size > MAX_SIZE
+        clearCache();
+        return cacheDirectoryPath;
     }
 
     public boolean exists(String imagename){
@@ -79,6 +87,47 @@ public class Images {
         }
 
         return bmp;
+    }
+
+    public String scalePicture(String imagepath){
+        File file = new File(imagepath);
+        InputStream in = null;
+        FileOutputStream out = null;
+        String newImagePath = null;
+
+        try {
+            in =  new FileInputStream(file);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize=8;
+            Bitmap bit = BitmapFactory.decodeStream(in,null,options);
+            Bitmap bitmap = Bitmap.createScaledBitmap(bit, 480, 640, true);
+            File newPicture = new File(imagepath.replace(".jpg", "_scaled") + ".jpg");
+
+            //export to out
+            out = new FileOutputStream(newPicture);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+            out.flush();
+
+            newImagePath = newPicture.getAbsolutePath();
+
+        } catch(IOException e){
+            e.printStackTrace();
+
+        } finally {
+
+            try {
+                if(out != null)
+                    out.close();
+
+            } catch(IOException e){
+                //
+            }
+
+        }
+
+        return newImagePath;
+
     }
 
     /* clear cache func */

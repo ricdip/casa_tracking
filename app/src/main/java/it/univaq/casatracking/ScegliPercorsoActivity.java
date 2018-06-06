@@ -8,6 +8,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -133,6 +135,31 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
         if(progress != null)
             if(progress.isShowing())
                 progress.dismiss();
+    }
+
+
+    /* MENU PREFERENZE */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.logout:
+                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                //clear activity stack
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

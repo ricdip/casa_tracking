@@ -13,13 +13,19 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -33,8 +39,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.File;
+
 import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
+import it.univaq.casatracking.utils.Images;
 import it.univaq.casatracking.utils.Player;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
@@ -48,9 +57,12 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     private LocationManager mManager;
 
     private Button callButton;
+    private Button takeAPhotoButton;
 
     private Utente utente;
     private boolean notify_cancelled;
+
+    private static final int TAKE_A_PICTURE = 0;
 
     //alert only called once
     private static boolean alertIsActive;
@@ -61,6 +73,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     private static boolean dismissed = false;
 
     private Handler autoCallHandler = new Handler();
+    private LatLng location_for_picture;
 
     private LatLng autoCallRunnableLatLng;
     private Runnable autoCallRunnable = new Runnable() {
@@ -110,6 +123,33 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     };
     /* END receiver for internet connection changes */
 
+    /* receiver for take a picture state */
+    public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
+    private BroadcastReceiver take_a_picture_receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if(intent == null || intent.getAction() == null) return;
+
+            switch (intent.getAction()){
+                case ACTION_SERVICE_COMPLETED:
+                    boolean success = intent.getBooleanExtra("success", false);
+
+                    if(success)
+                        //success
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_success), Toast.LENGTH_LONG).show();
+                    else
+                        //not success
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_not_success), Toast.LENGTH_LONG).show();
+
+                    break;
+
+            }
+
+        }
+    };
+    /* END receiver for take a picture state */
+
     /* location change listener */
     private LocationListener listener = new LocationListener() {
 
@@ -139,6 +179,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             double lng = location.getLongitude();
 
             loc = new LatLng(lat, lng);
+            //for func take_a_picture
+            location_for_picture = loc;
 
             //opzioni
             //options = new MarkerOptions();
@@ -190,8 +232,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         }
     };
 
-
+    //
     //END ACTION HANDLERS
+    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,6 +242,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         setContentView(R.layout.activity_navigazione_libera);
 
         callButton = findViewById(R.id.navigazionelibera_callButton);
+        takeAPhotoButton = findViewById(R.id.navigazionelibera_take_a_photoButton);
 
         callButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -208,6 +252,14 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 i.setAction(Services.ACTION_CALL_EDUCATORE);
                 startService(i);
 
+            }
+        });
+
+        takeAPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //upload image action
+                takeAPicture();
             }
         });
 
@@ -234,6 +286,11 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     @Override
     protected void onResume() {
         super.onResume();
+
+        //preparing take a picture
+        IntentFilter filter_take_a_picture_receiver = new IntentFilter();
+        filter_take_a_picture_receiver.addAction(ACTION_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(take_a_picture_receiver, filter_take_a_picture_receiver);
 
         if(!Request.isConnected(getApplicationContext())){
             //snackbar creation
@@ -283,6 +340,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             isReceiverRegistered = false;
         }
 
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(take_a_picture_receiver);
     }
 
     @Override
@@ -405,6 +463,76 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             }
         }
+    }
+
+
+    /* MENU PREFERENZE */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.logout:
+                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                //clear activity stack
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    /* UPLOAD PICTURE */
+
+    private String ImageAbsolutePath;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode){
+            case TAKE_A_PICTURE:
+                if(resultCode == RESULT_OK){
+                    //photo taken
+
+                    if(location_for_picture == null){
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_take_a_picture_no_gps), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    //prepare service
+                    Intent i = new Intent(getApplicationContext(), Services.class);
+                    i.setAction(Services.ACTION_TAKE_A_PICTURE);
+                    i.putExtra("image_path", ImageAbsolutePath);
+                    i.putExtra("loc", location_for_picture);
+                    //start service
+                    startService(i);
+
+                }
+                break;
+        }
+
+    }
+
+    public void takeAPicture(){
+        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        String img = Preferences.loadUtente(getApplicationContext()).getNumeroTelefono() + "_" + System.currentTimeMillis() + ".jpg";
+
+        File file = new File(Images.getInstance(getApplicationContext()).getCacheDirectoryPath(), img);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        Uri uri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".it.univaq.casatracking.provider", file);
+
+        i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        ImageAbsolutePath = file.getAbsolutePath();
+        this.startActivityForResult(i, TAKE_A_PICTURE);
     }
 
 }

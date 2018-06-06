@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.multidots.fingerprintauth.AuthErrorCodes;
 import com.multidots.fingerprintauth.FingerPrintAuthCallback;
 import com.multidots.fingerprintauth.FingerPrintAuthHelper;
@@ -81,7 +80,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) +
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) +
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) +
-                ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS))
+                ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) +
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA))
                 != PackageManager.PERMISSION_GRANTED) {
 
             //REQUEST
@@ -92,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION,
                             Manifest.permission.ACCESS_NETWORK_STATE,
-                            Manifest.permission.SEND_SMS}, PERMISSION_MULTIPLE_REQUEST);
+                            Manifest.permission.SEND_SMS,
+                            Manifest.permission.CAMERA}, PERMISSION_MULTIPLE_REQUEST);
         }
 
         // END REQUEST PERMISSIONS
@@ -104,8 +105,9 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
         super.onResume();
 
         /* print token di firebase (debug) */
-        String token = FirebaseInstanceId.getInstance().getToken();
-        System.out.println("FIREBASE TOKEN: " + token);
+        /* FEATURE DISABLED */
+        //String token = FirebaseInstanceId.getInstance().getToken();
+        //System.out.println("FIREBASE TOKEN: " + token);
         /* /print token di firebase (debug) */
 
         boolean isFirstAccess = Preferences.checkFirstAccess(getApplicationContext());
@@ -152,6 +154,9 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
         } else {
             messaggio.setText(getApplicationContext().getString(R.string.textview_scan_fingerprint));
+            String login_text = "LOGIN COME " + Preferences.loadUtente(getApplicationContext()).getNome();
+            loginButton.setText(login_text);
+
             mFingerPrintAuthHelper.startAuth();
         }
 
@@ -180,8 +185,9 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
                     boolean coarse = grantResults[3] == PackageManager.PERMISSION_GRANTED;
                     boolean network_state = grantResults[4] == PackageManager.PERMISSION_GRANTED;
                     boolean send_sms = grantResults[5] == PackageManager.PERMISSION_GRANTED;
+                    boolean camera = grantResults[6] == PackageManager.PERMISSION_GRANTED;
 
-                    if (phone_call && read_phone_state && gps && coarse && network_state && send_sms) {
+                    if (phone_call && read_phone_state && gps && coarse && network_state && send_sms && camera) {
                         //all permissions granted
                         //no actions
 
@@ -300,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 

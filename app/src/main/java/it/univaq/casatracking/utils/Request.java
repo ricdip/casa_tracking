@@ -5,12 +5,27 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -30,6 +45,8 @@ public class Request extends AsyncTask<Object, Void, Object> {
         int id_percorso;
         String alert;
         String nome_foto;
+        Bitmap bmp;
+        String image_path;
 
         Object result = "";
 
@@ -60,13 +77,19 @@ public class Request extends AsyncTask<Object, Void, Object> {
             case "download_image":
                 nome_foto = (String) objects[2];
                 loc = (LatLng) objects[3];
-                Bitmap bmp = doDownloadImageRequest(context,nome_foto, loc.latitude, loc.longitude);
+                bmp = doDownloadImageRequest(context,nome_foto, loc.latitude, loc.longitude);
 
                 if(bmp == null)
                     result = "{\"error\": \"DOWNLOAD IMAGE ERROR\"}";
                 else
                     result = bmp;
 
+                break;
+
+            case "upload_image":
+                image_path = (String) objects[2];
+                loc = (LatLng) objects[3];
+                result = doUploadImageRequest(context, image_path, loc.latitude, loc.longitude);
                 break;
         }
 
@@ -273,7 +296,7 @@ public class Request extends AsyncTask<Object, Void, Object> {
 
     private Bitmap doDownloadImageRequest(Context context, String nome_foto, double lat, double lon){
 
-        //TODO : bug check request and Images class
+        //TODO : bug check download image request and Images class
 
         Bitmap bmp = null;
         //images helper
@@ -339,6 +362,63 @@ public class Request extends AsyncTask<Object, Void, Object> {
         }
 
         return bmp;
+    }
+
+    private String doUploadImageRequest(Context context, String image_path, double lat, double lon){
+
+        //handle connection, request and return response
+        //address
+        String address = context.getString(R.string.server_path);
+        String res = "";
+        boolean success = false;
+
+
+        try{
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(address);
+
+            //scale picture
+            File fileImage = new File(Images.getInstance(context).scalePicture(image_path));
+
+            MultipartEntity mpEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+            mpEntity.addPart("photo", new FileBody(fileImage, "image/jpeg"));
+            mpEntity.addPart("lat", new StringBody(String.valueOf(lat)));
+            mpEntity.addPart("lon", new StringBody(String.valueOf(lon)));
+
+            httppost.setEntity(mpEntity);
+            HttpResponse result = httpclient.execute(httppost);
+            HttpEntity entita = result.getEntity();
+
+            if(result.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK)
+                success = true;
+            else
+                success = false;
+
+            if(success){
+                res = EntityUtils.toString(entita);
+                res = res.substring(res.indexOf('{'), res.indexOf('}')) + '}';
+            }
+
+            else
+                res = "{\"error\":"+ result.getStatusLine().getStatusCode() + "}";
+
+
+        } catch (final UnsupportedEncodingException e) {
+            Log.e("UPLOAD IMAGE", "Error in Unsopported Encoding: "+ e.toString());
+            e.printStackTrace();
+        } catch (final ClientProtocolException e) {
+            Log.e("UPLOAD IMAGE", "Error in Client Protocol: "+ e.toString());
+            e.printStackTrace();
+        } catch (final IOException e) {
+            Log.e("UPLOAD IMAGE", "Error in IOException: "+ e.toString());
+            e.printStackTrace();
+        }
+
+        if(res.equals(""))
+            res = "{\"error\":"+ "Upload Image Error" + "}";
+
+        return res;
+
     }
 
     /* CONNECTION IS ACTIVE */

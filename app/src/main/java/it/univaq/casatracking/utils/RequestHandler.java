@@ -140,4 +140,31 @@ public class RequestHandler {
         return bmp;
     }
 
+    public static String uploadImage(Context context, String image_path, LatLng loc){
+        String result = null;
+        Request request = null;
+        JSONObject result_json = null;
+
+        try {
+            request = new Request();
+            request.execute(context, "upload_image", image_path, loc);
+
+            result = (String) request.get();
+            result_json = new JSONObject(result);
+
+            // print response (debug)
+            if(result_json.has("error")){
+                String error = result_json.getString("error");
+                Log.d(TAG, error);
+                return result;
+            }
+            // /print response (debug)
+
+        } catch(InterruptedException|ExecutionException|JSONException e){
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 }

@@ -46,6 +46,9 @@
     <string name="textview_no_fingerprint_registered">NESSUNA IMPRONTA REGISTRATA</string>
 
     <string name="toast_no_gps">ATTIVA LA LOCALIZZAZIONE GPS</string>
+    <string name="toast_photo_upload_success">UPLOAD IMMAGINE COMPLETATO</string>
+    <string name="toast_photo_upload_not_success">UPLOAD IMMAGINE FALLITO</string>
+    <string name="toast_take_a_picture_no_gps">LOCALIZZAZIONE NON DISPONIBILE</string>
 
     <string name="snackbar_no_internet">NESSUNA CONNESSIONE INTERNET</string>
     <string name="snackbar_campi_vuoti">CAMPI VUOTI</string>
@@ -53,5 +56,6 @@
     <string name="snackbar_download_completato">DOWNLOAD COMPLETATO</string>
     <string name="snackbar_no_data">NESSUN PERCORSO TROVATO</string>
     <string name="snackbar_download_percorsi_error">ERRORE NEL DOWNLOAD DEI PERCORSI</string>
+    <string name="logout">Logout</string>
 
 </resources>

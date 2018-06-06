@@ -30,6 +30,9 @@ public class LoginActivity extends AppCompatActivity {
 
         utente = Preferences.loadUtente(getApplicationContext());
 
+        nome.setText(utente.getNome());
+        numero_telefono.setText(utente.getNumeroTelefono());
+
         LOGIN_loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
