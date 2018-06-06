@@ -52,7 +52,6 @@ public class RequestHandler {
     public static String getPercorsi(Context context, Utente utente){
         String result = null;
         Request request = null;
-        JSONObject result_json = null;
 
         try {
             request = new Request();
@@ -60,17 +59,14 @@ public class RequestHandler {
 
             result = (String) request.get();
 
-            result_json = new JSONObject(result);
-
             // print response (debug)
-            if(result_json.has("error")){
-                String error = result_json.getString("error");
-                Log.d(TAG, "GetPercorsi response error" + error);
+            if(result.equals("")){
+                Log.d(TAG, "GetPercorsi response error");
                 return null;
             }
             // /print response (debug)
 
-        } catch(InterruptedException|ExecutionException|JSONException e){
+        } catch(InterruptedException|ExecutionException e){
             e.printStackTrace();
         }
 
@@ -84,7 +80,7 @@ public class RequestHandler {
 
         try {
             request = new Request();
-            request.execute(context, "navigazione", utente, loc, id_percorso, alert);
+            request.execute(context, "navigazione", utente, loc, new Integer(id_percorso), alert);
 
             result = (String) request.get();
 

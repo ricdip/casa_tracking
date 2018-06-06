@@ -69,7 +69,7 @@ public class Request extends AsyncTask<Object, Void, Object> {
             case "navigazione":
                 utente = (Utente) objects[2];
                 loc = (LatLng) objects[3];
-                id_percorso = Integer.parseInt((String) objects[4]);
+                id_percorso = ((Integer) objects[4]).intValue();
                 alert = (String) objects[5];
                 result = doNavigazioneRequest(context, utente.getNumeroTelefono(), loc.latitude, loc.longitude, id_percorso, alert);
                 break;
@@ -195,7 +195,7 @@ public class Request extends AsyncTask<Object, Void, Object> {
             }
 
             if(!success){
-                return "{\"error\":\"code " + responseCode + "\"}";
+                return "";
             }
 
             /*

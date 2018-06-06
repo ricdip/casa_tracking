@@ -79,7 +79,12 @@ public class POIActivity extends AppCompatActivity {
 
                 // TODO : HANDLING NAVIGAZIONE REQUEST
                 JSONObject navigazione_json = new JSONObject(res);
-                alert = navigazione_json.getJSONObject("alert").toString();
+
+                if(navigazione_json.get("alert") instanceof Integer)
+                    alert = String.valueOf((Integer)navigazione_json.get("alert"));
+                else
+                    alert = (String)navigazione_json.get("alert");
+
                 JSONArray array = navigazione_json.getJSONArray("pois");
                 pois = new ArrayList<POI>();
                 Gson gson = new Gson();
@@ -89,6 +94,12 @@ public class POIActivity extends AppCompatActivity {
                     JSONObject item = array.optJSONObject(i);
                     pois.add(gson.fromJson(item.toString(), POI.class));
                 }
+
+                //debug
+                System.out.println("alert: " + alert);
+                //debug
+                for(POI poi : pois)
+                    System.out.println(poi);
 
             } catch(JSONException e){
                 e.printStackTrace();
@@ -133,6 +144,9 @@ public class POIActivity extends AppCompatActivity {
 
         //access location
         mManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        //debug
+        System.out.println(percorso);
 
         //check permissions
         int checkPerms = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);

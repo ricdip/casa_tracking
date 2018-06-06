@@ -75,6 +75,12 @@
         <activity android:name=".ChoiceActivity" android:screenOrientation="portrait"
             android:label="@string/choice_name"/>
 
+        <activity android:name=".ScegliPercorsoActivity" android:screenOrientation="portrait"
+            android:label="@string/scegli_percorso_name"/>
+
+        <activity android:name=".POIActivity" android:screenOrientation="portrait"
+            android:label="@string/POI_activity_name"/>
+
         <activity android:name=".MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

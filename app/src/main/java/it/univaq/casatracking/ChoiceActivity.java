@@ -26,15 +26,20 @@ public class ChoiceActivity extends AppCompatActivity {
         scegliPercorso = findViewById(R.id.scegliPercorsoButton);
         callButton = findViewById(R.id.choice_callButton);
 
-        //REMIND: dopo 60 secondi di inattività in ScegliPercorso redirect
-        //a NavigazioneLiberaActivity
-        //non ancora implementato
-        scegliPercorso.setVisibility(View.GONE);
-
         navigazioneLibera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(view.getContext(), NavigazioneLiberaActivity.class);
+                startActivity(i);
+            }
+        });
+
+        //REMIND: dopo 60 secondi di inattività in ScegliPercorso redirect
+        //a NavigazioneLiberaActivity
+        scegliPercorso.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(view.getContext(), ScegliPercorsoActivity.class);
                 startActivity(i);
             }
         });

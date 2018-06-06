@@ -36,6 +36,23 @@ public class Preferences {
 
     }
 
+    public static int loadPercentageTimeoutTimer(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String percentuale_scadenza_timeout = pref.getString("percentuale_scadenza_timeout", "0");
+
+        return Integer.parseInt(percentuale_scadenza_timeout);
+    }
+
+    public static void savePercentageTimeoutTimer(Context context, int percentuale_scadenza_timeout){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("percentuale_scadenza_timeout", String.valueOf(percentuale_scadenza_timeout));
+
+        editor.apply();
+    }
+
     public static Utente loadUtente(Context context){
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);

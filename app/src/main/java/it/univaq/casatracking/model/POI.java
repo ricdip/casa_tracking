@@ -88,4 +88,9 @@ public class POI {
         this.descrizione = descrizione;
     }
 
+    @Override
+    public String toString(){
+        return this.id + " - " + this.nome;
+    }
+
 }

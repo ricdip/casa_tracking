@@ -6,6 +6,8 @@
     <string name="choice_name">Casa+ Tracking</string>
     <string name="navigazionelibera_name">Navigazione Libera</string>
     <string name="settings_name">Preferenze</string>
+    <string name="scegli_percorso_name">Scegli Percorso</string>
+    <string name="POI_activity_name">Navigazione Per Immagini</string>
 
     <!-- GOOGLE MAPS API KEY -->
     <string name="API_KEY">AIzaSyBAV8ooUwmlCF2QDKBitCfR2GyrqnvnIXk</string>

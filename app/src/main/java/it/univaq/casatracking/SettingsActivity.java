@@ -35,6 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
         private EditTextPreference nome_utente;
         private EditTextPreference numero_telefono;
         private EditTextPreference numero_telefono_educatore;
+        private EditTextPreference percentuale_scadenza_timeout;
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,7 +45,7 @@ public class SettingsActivity extends AppCompatActivity {
             nome_utente = (EditTextPreference) findPreference("nome_utente");
             numero_telefono = (EditTextPreference) findPreference("numero_telefono");
             numero_telefono_educatore = (EditTextPreference) findPreference("numero_telefono_educatore");
-
+            percentuale_scadenza_timeout = (EditTextPreference) findPreference("percentuale_scadenza_timeout");
 
             // listeners
             nome_utente.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -98,13 +99,31 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
+            percentuale_scadenza_timeout.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+
+                    int percentage = Integer.parseInt((String) newValue);
+                    //percentage not valid
+                    if(!(percentage >= 0 && percentage <= 100)){
+                        Preferences.savePercentageTimeoutTimer(getContext(), 0);
+                        preference.setSummary(String.valueOf(0) + "%");
+                        return false;
+                    }
+
+
+                    preference.setSummary(String.valueOf(percentage)  + "%");
+                    return true;
+                }
+            });
+
             // summary
             nome_utente.setSummary(Preferences.load(getContext(), "nome_utente"));
             numero_telefono.setSummary(Preferences.load(getContext(),"numero_telefono"));
             numero_telefono_educatore.setSummary(Preferences.load(getContext(),"numero_telefono_educatore"));
+            percentuale_scadenza_timeout.setSummary(String.valueOf(Preferences.loadPercentageTimeoutTimer(getContext()))  + "%");
 
         }
-
 
     }
 }
