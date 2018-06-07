@@ -51,6 +51,8 @@
     <string name="toast_photo_upload_success">UPLOAD IMMAGINE COMPLETATO</string>
     <string name="toast_photo_upload_not_success">UPLOAD IMMAGINE FALLITO</string>
     <string name="toast_take_a_picture_no_gps">LOCALIZZAZIONE NON DISPONIBILE</string>
+    <string name="toast_poi_error">ERRORE NEL DOWNLOAD DEI POIs</string>
+    <string name="toast_no_pois">NESSUN POI TROVATO</string>
 
     <string name="snackbar_no_internet">NESSUNA CONNESSIONE INTERNET</string>
     <string name="snackbar_campi_vuoti">CAMPI VUOTI</string>
@@ -59,5 +61,8 @@
     <string name="snackbar_no_data">NESSUN PERCORSO TROVATO</string>
     <string name="snackbar_download_percorsi_error">ERRORE NEL DOWNLOAD DEI PERCORSI</string>
     <string name="logout">Logout</string>
+    <string name="poi_image">POIImage</string>
+    
+    <string name="timesup">TEMPO SCADUTO</string>
 
 </resources>

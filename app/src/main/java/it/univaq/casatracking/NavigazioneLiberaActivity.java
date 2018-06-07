@@ -523,6 +523,12 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     }
 
     public void takeAPicture(){
+
+        if(location_for_picture == null){
+            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_take_a_picture_no_gps), Toast.LENGTH_LONG).show();
+            return;
+        }
+
         Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         String img = Preferences.loadUtente(getApplicationContext()).getNumeroTelefono() + "_" + System.currentTimeMillis() + ".jpg";
 

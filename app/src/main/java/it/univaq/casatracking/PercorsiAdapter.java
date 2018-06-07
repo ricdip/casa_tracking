@@ -1,12 +1,12 @@
 package it.univaq.casatracking;
 
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -62,11 +62,15 @@ public class PercorsiAdapter extends RecyclerView.Adapter<PercorsiAdapter.ViewHo
 
         @Override
         public void onClick(View v) {
+            /*
             JSONObject percorso = data.optJSONObject(getAdapterPosition());
             Intent intent = new Intent(v.getContext(), POIActivity.class);
             intent.putExtra("percorso", percorso.toString());
 
-            v.getContext().startActivity(intent);
+            v.getContext().startActivity(intent);*/
+            //ancora non pronto
+            Toast.makeText(v.getContext(), "LAVORI IN CORSO", Toast.LENGTH_LONG).show();
+
         }
     }
 

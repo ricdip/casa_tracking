@@ -17,6 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import it.univaq.casatracking.NavigazioneLiberaActivity;
+import it.univaq.casatracking.ScegliPercorsoActivity;
+import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.RequestHandler;
 
@@ -28,6 +30,7 @@ public class Services extends IntentService {
     public static final String ACTION_SEND_SMS = "action_send_sms";
     public static final String ACTION_ALERT = "action_alert";
     public static final String ACTION_TAKE_A_PICTURE = "action_take_a_picture";
+    public static final String ACTION_DOWNLOAD_PERCORSI = "action_download_percorsi";
 
 
     private static final String NAME = Services.class.getSimpleName();
@@ -56,6 +59,10 @@ public class Services extends IntentService {
 
                 case ACTION_TAKE_A_PICTURE:
                     handleUploadPicture(intent.getStringExtra("image_path"), (LatLng) intent.getExtras().get("loc"));
+                    break;
+
+                case ACTION_DOWNLOAD_PERCORSI:
+                    downloadPercorsi();
                     break;
 
             }
@@ -151,6 +158,21 @@ public class Services extends IntentService {
         else
             response.putExtra("success", false);
 
+
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(response);
+
+    }
+
+    private void downloadPercorsi(){
+
+        Intent response = new Intent(ScegliPercorsoActivity.ACTION_SERVICE_COMPLETED);
+        Utente utente = Preferences.loadUtente(getApplicationContext());
+
+
+        //download percorsi
+        String result = RequestHandler.getPercorsi(getApplicationContext(), utente);
+
+        response.putExtra("data", result);
 
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(response);
 

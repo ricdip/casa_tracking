@@ -1,10 +1,14 @@
 package it.univaq.casatracking;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,7 +24,6 @@ import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
-import it.univaq.casatracking.utils.RequestHandler;
 
 public class ScegliPercorsoActivity extends AppCompatActivity {
 
@@ -29,6 +32,66 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
     private Utente utente;
 
     private Button callButton;
+
+    public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
+    private boolean download_completed = false;
+
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if(intent == null || intent.getAction() == null) return;
+
+            switch (intent.getAction()){
+                case ACTION_SERVICE_COMPLETED:
+
+                    //download completed, dismissing progress dialog
+                    String result = intent.getStringExtra("data");
+                    try {
+
+                        if(result == null){
+                            dismissProgress();
+                            //snackbar creation
+                            Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_download_percorsi_error), Snackbar.LENGTH_LONG);
+                            snackbar.show();
+
+                            return;
+                        }
+
+                        JSONArray array = new JSONArray(result);
+
+                        if(array.length() == 0){
+                            dismissProgress();
+                            //snackbar creation
+                            Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_no_data), Snackbar.LENGTH_LONG);
+                            snackbar.show();
+
+                            return;
+                        }
+
+                        PercorsiAdapter percorsi_adapter = new PercorsiAdapter(array);
+
+                        dismissProgress();
+                        // /progress
+
+                        recyclerView.setAdapter(percorsi_adapter);
+
+                        //snackbar creation
+                        Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_download_completato), Snackbar.LENGTH_LONG);
+                        snackbar.show();
+
+                        download_completed = true;
+
+                    } catch(JSONException e){
+                        e.printStackTrace();
+                    }
+
+                    break;
+
+            }
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,59 +122,37 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        try {
+        if(download_completed)
+            return;
 
-            //download data
-            if(!Request.isConnected(getApplicationContext())){
-                //snackbar creation
-                Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_no_internet), Snackbar.LENGTH_LONG);
-                snackbar.show();
-
-                return;
-            }
-
-            //progress
-            showProgress();
-
-            //download percorsi
-            String result = RequestHandler.getPercorsi(getApplicationContext(), utente);
-
-            if(result == null){
-                dismissProgress();
-                //snackbar creation
-                Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_download_percorsi_error), Snackbar.LENGTH_LONG);
-                snackbar.show();
-
-                return;
-            }
-
-            JSONArray array = new JSONArray(result);
-
-            if(array.length() == 0){
-                dismissProgress();
-                //snackbar creation
-                Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_no_data), Snackbar.LENGTH_LONG);
-                snackbar.show();
-
-                return;
-            }
-
-            PercorsiAdapter percorsi_adapter = new PercorsiAdapter(array);
-
-            dismissProgress();
-            // /progress
-
-            recyclerView.setAdapter(percorsi_adapter);
-
+        //download data
+        if(!Request.isConnected(getApplicationContext())){
             //snackbar creation
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_download_completato), Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.sceglipercorso_constraint), getApplicationContext().getString(R.string.snackbar_no_internet), Snackbar.LENGTH_LONG);
             snackbar.show();
 
-        } catch(JSONException e){
-            e.printStackTrace();
+            return;
         }
 
+        //progress
+        showProgress();
 
+        //preparing to download
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, filter);
+
+        //start download service
+        Intent intent = new Intent(getApplicationContext(), Services.class);
+        intent.setAction(Services.ACTION_DOWNLOAD_PERCORSI);
+        startService(intent);
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver);
     }
 
     @Override
