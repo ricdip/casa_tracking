@@ -42,7 +42,7 @@
     <string name="alert_call_educatore">CHIAMARE L\'EDUCATORE ?</string>
 
     <string name="textview_riprova">RIPROVA</string>
-    <string name="textview_error_not_recoverable">DAI IL TELEFONO ALL\'EDUCATORE</string>
+    <string name="textview_error_not_recoverable">ERRORE LETTURA IMPRONTE\nUSARE UN ALTRO METODO DI AUTENTICAZIONE</string>
     <string name="textview_scan_fingerprint">METTI IL DITO SUL LETTORE IMPRONTE</string>
     <string name="textview_no_hardware_for_scan_fingerprint">LE IMPRONTE NON SONO SUPPORTATE</string>
     <string name="textview_no_fingerprint_registered">NESSUNA IMPRONTA REGISTRATA</string>

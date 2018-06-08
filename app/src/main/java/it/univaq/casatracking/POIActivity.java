@@ -75,6 +75,8 @@ public class POIActivity extends AppCompatActivity {
 
     private boolean notify_cancelled;
 
+    private boolean timesup = false;
+
     /* handler per alert */
     private static int TIME_OUT_AUTOMATIC_ALERT;
     private LatLng location_for_picture_and_alerthandler;
@@ -83,6 +85,7 @@ public class POIActivity extends AppCompatActivity {
         @Override
         public void run() {
             alertHandler.removeCallbacks(alertRunnable);
+            timesup = true;
             alert(location_for_picture_and_alerthandler);
         }
     };
@@ -305,7 +308,7 @@ public class POIActivity extends AppCompatActivity {
 
         timer = Timer.getInstance(getApplicationContext(), percorso.getTempo()*1000);
 
-        //AUTOCALL IN x% TEMPO_PERCORSO
+        //ALERT IN x% TEMPO_PERCORSO
         //tempo percorso in secondi
         TIME_OUT_AUTOMATIC_ALERT = (Preferences.loadPercentageTimeoutTimer(getApplicationContext())*(percorso.getTempo()*1000))/100;
 
@@ -415,7 +418,13 @@ public class POIActivity extends AppCompatActivity {
         //creazione dialog chiamata
         AlertDialog.Builder builder = new AlertDialog.Builder(POIActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
-        builder.setTitle(getApplicationContext().getString(R.string.alert_title))
+        if(timesup)
+            builder.setTitle(getApplicationContext().getString(R.string.timesup));
+        else
+            builder.setTitle(getApplicationContext().getString(R.string.alert_title));
+
+
+            builder
                 .setMessage(getApplicationContext().getString(R.string.alert_call_educatore)
                 )
                 .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
