@@ -53,6 +53,7 @@
     <string name="toast_take_a_picture_no_gps">LOCALIZZAZIONE NON DISPONIBILE</string>
     <string name="toast_poi_error">ERRORE NEL DOWNLOAD DEI POIs</string>
     <string name="toast_no_pois">NESSUN POI TROVATO</string>
+    <string name="toast_new_poi">NUOVO POI TROVATO</string>
 
     <string name="snackbar_no_internet">NESSUNA CONNESSIONE INTERNET</string>
     <string name="snackbar_campi_vuoti">CAMPI VUOTI</string>

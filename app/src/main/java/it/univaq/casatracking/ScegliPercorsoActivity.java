@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,6 +37,20 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
     public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
     private boolean download_completed = false;
 
+    /* handler per redirect */
+    private static final int TIMEOUT = 10*1000; //60 seconds
+    private Handler redirectHandler = new Handler();
+    private Runnable redirectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            redirectHandler.removeCallbacks(redirectRunnable);
+            //redirect to NavigazioneLibera
+            finish();
+            Intent i = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
+            startActivity(i);
+        }
+    };
+    /* END handler per alert */
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -116,6 +131,9 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
             }
         });
 
+        // redirect in TIMEOUT ms
+        redirectHandler.postDelayed(redirectRunnable, TIMEOUT);
+
     }
 
     @Override
@@ -147,17 +165,25 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
         intent.setAction(Services.ACTION_DOWNLOAD_PERCORSI);
         startService(intent);
 
+        resetRedirectTimer();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver);
+        stopRedirectTimer();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        resetRedirectTimer();
     }
 
     private void showProgress(){
@@ -201,6 +227,15 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void resetRedirectTimer(){
+        redirectHandler.removeCallbacks(redirectRunnable);
+        redirectHandler.postDelayed(redirectRunnable, TIMEOUT);
+    }
+
+    public void stopRedirectTimer(){
+        redirectHandler.removeCallbacks(redirectRunnable);
     }
 
 }

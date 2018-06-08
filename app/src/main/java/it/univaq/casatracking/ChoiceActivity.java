@@ -34,8 +34,6 @@ public class ChoiceActivity extends AppCompatActivity {
             }
         });
 
-        //REMIND: dopo 60 secondi di inattività in ScegliPercorso redirect
-        //a NavigazioneLiberaActivity
         scegliPercorso.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

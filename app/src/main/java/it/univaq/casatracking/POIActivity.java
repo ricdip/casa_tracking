@@ -51,7 +51,7 @@ import it.univaq.casatracking.utils.Timer;
 
 public class POIActivity extends AppCompatActivity {
 
-    //TODO : CLASSE POIActivity INCOMPLETA
+    //TODO : DEGUG E REVISIONE classe POIActivity
 
     private Utente utente;
     private Percorso percorso;
@@ -82,7 +82,7 @@ public class POIActivity extends AppCompatActivity {
     private Runnable alertRunnable = new Runnable() {
         @Override
         public void run() {
-            alertHandler.removeCallbacks(autoCallRunnable);
+            alertHandler.removeCallbacks(alertRunnable);
             alert(location_for_picture_and_alerthandler);
         }
     };
@@ -165,14 +165,15 @@ public class POIActivity extends AppCompatActivity {
 
             try {
 
-                // TODO : HANDLING NAVIGAZIONE REQUEST
                 JSONObject navigazione_json = new JSONObject(res);
 
+                //alert retrieve
                 if(navigazione_json.get("alert") instanceof Integer)
                     alert = String.valueOf((Integer)navigazione_json.get("alert"));
                 else
                     alert = (String)navigazione_json.get("alert");
 
+                //pois retrieve
                 if(navigazione_json.has("pois")){
                     JSONArray array = navigazione_json.getJSONArray("pois");
                     Gson gson = new Gson();
@@ -187,6 +188,7 @@ public class POIActivity extends AppCompatActivity {
 
                         timer.startTimer();
 
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_new_poi), Toast.LENGTH_SHORT).show();
                     }
 
                     if(poi.getId() != newpoi.getId()){
@@ -195,14 +197,17 @@ public class POIActivity extends AppCompatActivity {
                         navigazione_immagini_titolo.setText(poi.getNome());
                         navigazione_immagini_descrizione.setText(poi.getDescrizione());
                         navigazione_immagini_immagine.setImageBitmap(RequestHandler.downloadImage(getApplicationContext(), poi.getFoto(), loc));
+
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_new_poi), Toast.LENGTH_SHORT).show();
                     }
 
                 } else {
                     poi = null;
                     navigazione_immagini_titolo.setText(getApplicationContext().getString(R.string.toast_no_pois));
-                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_pois), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_pois), Toast.LENGTH_SHORT).show();
                 }
 
+                //alert check
                 if(alert.equals("1") && !notify_cancelled)
                     alert(loc);
 
@@ -394,7 +399,7 @@ public class POIActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
+    /* metodo chiamato se alert=1 */
     private void alert(final LatLng loc){
 
         /* BOOLEAN PER ATOMICITA' DELLA FUNZIONE ALERT */
@@ -474,6 +479,15 @@ public class POIActivity extends AppCompatActivity {
         autoCallRunnableLatLng = loc;
         autoCallHandler.postDelayed(autoCallRunnable, TIME_OUT_AUTOMATIC_CALL);
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if(timer != null){
+            timer.stopTimer();
+            timer = null;
+        }
     }
 
     /* UPLOAD PICTURE */
