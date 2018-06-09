@@ -240,6 +240,10 @@ public class POIActivity extends AppCompatActivity {
         @Override
         public void onProviderDisabled(String s) {
             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_LONG).show();
+            navigazione_immagini_titolo.setText("GPS DISATTIVATO");
+            navigazione_immagini_descrizione.setText("");
+            navigazione_immagini_timeout.setText("");
+            navigazione_immagini_immagine.setImageDrawable(getApplicationContext().getDrawable(android.R.drawable.screen_background_light));
         }
     };
 
