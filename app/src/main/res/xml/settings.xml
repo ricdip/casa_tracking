@@ -21,6 +21,12 @@
             android:singleLine="true"
             android:title="Numero di telefono educatore"
             android:inputType="phone" />
+        <EditTextPreference
+            android:key="numero_telefono_emergenza"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Numero di emergenza"
+            android:inputType="phone" />
 
     </PreferenceCategory>
 
@@ -33,6 +39,13 @@
             android:title="Percentuale scadenza timeout"
             android:inputType="number" />
 
+        <SwitchPreference
+            android:key="invio_automatico_sms_onevent_area_sicura"
+            android:defaultValue="false"
+            android:title="Invio automatico"
+            android:summary="@string/automatic_sms_summary"/>
+
     </PreferenceCategory>
+
 
 </PreferenceScreen>

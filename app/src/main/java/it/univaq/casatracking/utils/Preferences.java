@@ -18,6 +18,7 @@ public class Preferences {
         editor.putString("nome_utente", utente.getNome());
         editor.putString("numero_telefono", utente.getNumeroTelefono());
         editor.putString("numero_telefono_educatore", utente.getNumeroTelefonoEducatore());
+        editor.putString("numero_telefono_emergenza", utente.getNumeroEmergenza());
 
         editor.apply();
 
@@ -60,8 +61,9 @@ public class Preferences {
         String nome_utente = pref.getString("nome_utente", "TEST");
         String numero_telefono = pref.getString("numero_telefono", "TEST");
         String numero_telefono_educatore = pref.getString("numero_telefono_educatore", "TEST");
+        String numero_telefono_emergenza = pref.getString("numero_telefono_emergenza", "TEST");
 
-        Utente utente = new Utente(nome_utente, numero_telefono, numero_telefono_educatore);
+        Utente utente = new Utente(nome_utente, numero_telefono, numero_telefono_educatore, numero_telefono_emergenza);
 
         return utente;
 
@@ -135,6 +137,14 @@ public class Preferences {
         editor.putBoolean("automatic_login_not_enabled", true);
 
         editor.apply();
+    }
+
+    public static boolean checkAutomaticSMS(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean automaticSMS = pref.getBoolean("invio_automatico_sms_onevent_area_sicura", false);
+
+        return automaticSMS;
     }
 
 }

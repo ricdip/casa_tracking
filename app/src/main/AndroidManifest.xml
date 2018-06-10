@@ -61,7 +61,6 @@
             </intent-filter>
         </service>
 
-
         <!-- ACTIVITIES -->
         <activity android:name=".SettingsActivity" android:screenOrientation="portrait"
             android:label="@string/settings_name"/>

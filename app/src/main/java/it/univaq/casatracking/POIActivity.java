@@ -76,26 +76,29 @@ public class POIActivity extends AppCompatActivity {
     private boolean notify_cancelled;
 
     private boolean timesup = false;
+    private boolean send_sms = false;
 
     /* handler per alert */
     private static int TIME_OUT_AUTOMATIC_ALERT;
-    private LatLng location_for_picture_and_alerthandler;
+    private LatLng location_variable;
     private Handler alertHandler = new Handler();
     private Runnable alertRunnable = new Runnable() {
         @Override
         public void run() {
             alertHandler.removeCallbacks(alertRunnable);
             timesup = true;
-            alert(location_for_picture_and_alerthandler);
+            alert(location_variable);
         }
     };
     /* END handler per alert */
 
     /* handler per autocall */
     //auto chiamata in 15 secondi
-    private Handler autoCallHandler = new Handler();
     private static final int TIME_OUT_AUTOMATIC_CALL = 15000;
     private static boolean dismissed = false;
+
+    private Handler autoCallHandler = new Handler();
+
     private LatLng autoCallRunnableLatLng;
     private Runnable autoCallRunnable = new Runnable() {
 
@@ -109,14 +112,16 @@ public class POIActivity extends AppCompatActivity {
                 Player.getInstance(getApplicationContext()).stopPlaying();
 
                 alertIsActive = false;
-
                 notify_cancelled = true;
 
                 //sms con coordinate a educatore e successiva chiamata
                 Intent doAlert = new Intent(getApplicationContext(), Services.class);
                 doAlert.setAction(Services.ACTION_ALERT);
                 //pattern link: https://www.google.com/maps/@42.0458585,13.9318123,15z
-                doAlert.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI: " + "https://www.google.com/maps/@" + autoCallRunnableLatLng.latitude + "," + autoCallRunnableLatLng.longitude + ",15z");
+                //http://maps.google.com/maps?z=18&q=10.8061,106.7130
+                doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                doAlert.putExtra("loc",  autoCallRunnableLatLng);
+
                 startService(doAlert);
 
                 //cancel wake up
@@ -157,7 +162,7 @@ public class POIActivity extends AppCompatActivity {
             double lng = location.getLongitude();
 
             loc = new LatLng(lat, lng);
-            location_for_picture_and_alerthandler = loc;
+            location_variable = loc;
 
             String res = RequestHandler.navigazione(getApplicationContext(), utente, loc, percorso.getId(), alert);
 
@@ -266,7 +271,8 @@ public class POIActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //Call action
                 Intent i = new Intent(getApplicationContext(), Services.class);
-                i.setAction(Services.ACTION_CALL_EDUCATORE);
+                i.setAction(Services.ACTION_CALL_EDUCATORE_WITH_SMS);
+                i.putExtra("loc", location_variable);
                 startService(i);
 
             }
@@ -406,7 +412,7 @@ public class POIActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /* metodo chiamato se alert=1 */
+    /* metodo chiamato se alert=1, ovvero se l'utente non è più nell'area sicura */
     private void alert(final LatLng loc){
 
         /* BOOLEAN PER ATOMICITA' DELLA FUNZIONE ALERT */
@@ -422,13 +428,7 @@ public class POIActivity extends AppCompatActivity {
         //creazione dialog chiamata
         AlertDialog.Builder builder = new AlertDialog.Builder(POIActivity.this, android.R.style.Theme_Material_Dialog_Alert);
 
-        if(timesup)
-            builder.setTitle(getApplicationContext().getString(R.string.timesup));
-        else
-            builder.setTitle(getApplicationContext().getString(R.string.alert_title));
-
-
-            builder
+        builder.setTitle(getApplicationContext().getString(R.string.alert_title))
                 .setMessage(getApplicationContext().getString(R.string.alert_call_educatore)
                 )
                 .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
@@ -440,16 +440,16 @@ public class POIActivity extends AppCompatActivity {
                         Intent doAlert = new Intent(getApplicationContext(), Services.class);
                         doAlert.setAction(Services.ACTION_ALERT);
                         //https://www.google.com/maps/@42.0458585,13.9318123,15z
-                        doAlert.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI: " + "https://www.google.com/maps/@" + loc.latitude + "," + loc.longitude + ",15z");
+                        //http://maps.google.com/maps?z=18&q=10.8061,106.7130
+                        doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                        doAlert.putExtra("loc", loc);
                         startService(doAlert);
 
+                        notify_cancelled = true;
                         dismissed = true;
                         dialog.dismiss();
 
                         alertIsActive = false;
-
-                        notify_cancelled = true;
-
                         //cancel wake up
                         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                         autoCallHandler.removeCallbacks(autoCallRunnable);
@@ -462,18 +462,48 @@ public class POIActivity extends AppCompatActivity {
 
                         Player.getInstance(getApplicationContext()).stopPlaying();
 
-                        //solo avviso con sms all'educatore che utente è fuori area sicura
-                        Intent sms = new Intent(getApplicationContext(), Services.class);
-                        sms.setAction(Services.ACTION_SEND_SMS);
-                        sms.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI: " + "https://www.google.com/maps/@" + loc.latitude + "," + loc.longitude + ",15z");
-                        startService(sms);
 
+                        if(!Preferences.checkAutomaticSMS(getApplicationContext())){
+                            //not automatic sms
+                            //solo avviso con sms all'educatore che utente è fuori area sicura
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(POIActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                            builder2.setTitle(getApplicationContext().getString(R.string.alert_title))
+                                    .setMessage(getApplicationContext().getString(R.string.alert_sms_educatore))
+                                    .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            Intent sms = new Intent(getApplicationContext(), Services.class);
+                                            sms.setAction(Services.ACTION_SEND_SMS);
+                                            sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                                            sms.putExtra("loc", loc);
+                                            startService(sms);
+
+                                            dialogInterface.dismiss();
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            dialogInterface.dismiss();
+                                        }
+                                    })
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .setCancelable(false)
+                                    .show();
+                        } else {
+                            //automatic sms
+                            Intent sms = new Intent(getApplicationContext(), Services.class);
+                            sms.setAction(Services.ACTION_SEND_SMS);
+                            sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                            sms.putExtra("loc", loc);
+                            startService(sms);
+                        }
+
+                        notify_cancelled = true;
                         dismissed = true;
                         dialog.dismiss();
 
                         alertIsActive = false;
-
-                        notify_cancelled = true;
 
                         //cancel wake up
                         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
@@ -515,7 +545,7 @@ public class POIActivity extends AppCompatActivity {
                 if(resultCode == RESULT_OK){
                     //photo taken
 
-                    if(location_for_picture_and_alerthandler == null){
+                    if(location_variable == null){
                         Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_take_a_picture_no_gps), Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -524,7 +554,7 @@ public class POIActivity extends AppCompatActivity {
                     Intent i = new Intent(getApplicationContext(), Services.class);
                     i.setAction(Services.ACTION_TAKE_A_PICTURE);
                     i.putExtra("image_path", ImageAbsolutePath);
-                    i.putExtra("loc", location_for_picture_and_alerthandler);
+                    i.putExtra("loc", location_variable);
                     //start service
                     startService(i);
 
@@ -536,7 +566,7 @@ public class POIActivity extends AppCompatActivity {
 
     public void takeAPicture(){
 
-        if(location_for_picture_and_alerthandler == null){
+        if(location_variable == null){
             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_take_a_picture_no_gps), Toast.LENGTH_LONG).show();
             return;
         }

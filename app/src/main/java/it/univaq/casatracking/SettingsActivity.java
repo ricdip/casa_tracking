@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
@@ -36,6 +37,8 @@ public class SettingsActivity extends AppCompatActivity {
         private EditTextPreference numero_telefono;
         private EditTextPreference numero_telefono_educatore;
         private EditTextPreference percentuale_scadenza_timeout;
+        private EditTextPreference numero_telefono_emergenza;
+        private SwitchPreference invio_automatico_sms_onevent_area_sicura;
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,6 +49,8 @@ public class SettingsActivity extends AppCompatActivity {
             numero_telefono = (EditTextPreference) findPreference("numero_telefono");
             numero_telefono_educatore = (EditTextPreference) findPreference("numero_telefono_educatore");
             percentuale_scadenza_timeout = (EditTextPreference) findPreference("percentuale_scadenza_timeout");
+            numero_telefono_emergenza = (EditTextPreference) findPreference("numero_telefono_emergenza");
+            invio_automatico_sms_onevent_area_sicura = (SwitchPreference) findPreference("invio_automatico_sms_onevent_area_sicura");
 
             // listeners
             nome_utente.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -99,6 +104,23 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
+            numero_telefono_emergenza.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    String numero_telefono_emergenza = (String) newValue;
+
+                    //Preferences.save(getContext(), "numero_telefono_emergenza", numero_telefono_emergenza);
+                    if(Preferences.checkFirstAccess(getContext()))
+                        Preferences.cancelFirstAccess(getContext());
+
+                    if(!Preferences.checkAutomaticLoginNotEnabled(getContext()))
+                        Preferences.setAutomaticLoginNotEnabled(getContext());
+
+                    preference.setSummary(numero_telefono_emergenza);
+                    return true;
+                }
+            });
+
             percentuale_scadenza_timeout.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -121,8 +143,8 @@ public class SettingsActivity extends AppCompatActivity {
             nome_utente.setSummary(Preferences.load(getContext(), "nome_utente"));
             numero_telefono.setSummary(Preferences.load(getContext(),"numero_telefono"));
             numero_telefono_educatore.setSummary(Preferences.load(getContext(),"numero_telefono_educatore"));
+            numero_telefono_emergenza.setSummary(Preferences.load(getContext(), "numero_telefono_emergenza"));
             percentuale_scadenza_timeout.setSummary(String.valueOf(Preferences.loadPercentageTimeoutTimer(getContext()))  + "%");
-
         }
 
     }

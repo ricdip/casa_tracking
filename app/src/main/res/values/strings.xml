@@ -40,6 +40,7 @@
     <string name="alert_no_user_registered">Nessun utente registrato\nAndare alle preferenze ?</string>
     <string name="alert_no_fingerprints">Nessuna impronta registrata\ninserirle ?</string>
     <string name="alert_call_educatore">CHIAMARE L\'EDUCATORE ?</string>
+    <string name="alert_sms_educatore">INVIARE UN SMS ALL\'EDUCATORE ?</string>
 
     <string name="textview_riprova">RIPROVA</string>
     <string name="textview_error_not_recoverable">ERRORE LETTURA IMPRONTE\nUSARE UN ALTRO METODO DI AUTENTICAZIONE</string>
@@ -65,5 +66,7 @@
     <string name="poi_image">POIImage</string>
     
     <string name="timesup">TEMPO SCADUTO</string>
+
+    <string name="automatic_sms_summary">Invio automatico di sms all\'uscita dall\'area sicura</string>
 
 </resources>

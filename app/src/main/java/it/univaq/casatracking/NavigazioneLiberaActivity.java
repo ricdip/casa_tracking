@@ -73,7 +73,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     private static boolean dismissed = false;
 
     private Handler autoCallHandler = new Handler();
-    private LatLng location_for_picture;
+    private LatLng location_variable;
 
     private LatLng autoCallRunnableLatLng;
     private Runnable autoCallRunnable = new Runnable() {
@@ -93,8 +93,9 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 //sms con coordinate a educatore e successiva chiamata
                 Intent doAlert = new Intent(getApplicationContext(), Services.class);
                 doAlert.setAction(Services.ACTION_ALERT);
-                //pattern link: https://www.google.com/maps/@42.0458585,13.9318123,15z
-                doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + autoCallRunnableLatLng.latitude + "," + autoCallRunnableLatLng.longitude + ",15z");
+                doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                doAlert.putExtra("loc",  autoCallRunnableLatLng);
+
                 startService(doAlert);
 
                 //cancel wake up
@@ -137,10 +138,10 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
                     if(success)
                         //success
-                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_success), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_success), Toast.LENGTH_SHORT).show();
                     else
                         //not success
-                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_not_success), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_not_success), Toast.LENGTH_SHORT).show();
 
                     break;
 
@@ -180,7 +181,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             loc = new LatLng(lat, lng);
             //for func take_a_picture
-            location_for_picture = loc;
+            location_variable = loc;
 
             //opzioni
             //options = new MarkerOptions();
@@ -228,7 +229,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         @Override
         public void onProviderDisabled(String provider) {
-            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -249,7 +250,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             public void onClick(View view) {
                 //Call action
                 Intent i = new Intent(getApplicationContext(), Services.class);
-                i.setAction(Services.ACTION_CALL_EDUCATORE);
+                i.setAction(Services.ACTION_CALL_EDUCATORE_WITH_SMS);
+                i.putExtra("loc", location_variable);
                 startService(i);
 
             }
@@ -392,8 +394,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                         //alert a educatore con send sms
                         Intent doAlert = new Intent(getApplicationContext(), Services.class);
                         doAlert.setAction(Services.ACTION_ALERT);
-                        //https://www.google.com/maps/@42.0458585,13.9318123,15z
-                        doAlert.putExtra("sms_body", "SONO QUI: " + "https://www.google.com/maps/@" + loc.latitude + "," + loc.longitude + ",15z");
+                        doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                        doAlert.putExtra("loc", loc);
                         startService(doAlert);
 
                         notify_cancelled = true;
@@ -413,11 +415,42 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
                         Player.getInstance(getApplicationContext()).stopPlaying();
 
-                        //solo avviso con sms all'educatore che utente è fuori area sicura
-                        Intent sms = new Intent(getApplicationContext(), Services.class);
-                        sms.setAction(Services.ACTION_SEND_SMS);
-                        sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA: " + "https://www.google.com/maps/@" + loc.latitude + "," + loc.longitude + ",15z");
-                        startService(sms);
+
+                        if(!Preferences.checkAutomaticSMS(getApplicationContext())){
+                            //not automatic sms
+                            //solo avviso con sms all'educatore che utente è fuori area sicura
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(NavigazioneLiberaActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                            builder2.setTitle(getApplicationContext().getString(R.string.alert_title))
+                                    .setMessage(getApplicationContext().getString(R.string.alert_sms_educatore))
+                                    .setPositiveButton(R.string.button_si, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            Intent sms = new Intent(getApplicationContext(), Services.class);
+                                            sms.setAction(Services.ACTION_SEND_SMS);
+                                            sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                                            sms.putExtra("loc", loc);
+                                            startService(sms);
+
+                                            dialogInterface.dismiss();
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.button_no, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            dialogInterface.dismiss();
+                                        }
+                                    })
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .setCancelable(false)
+                                    .show();
+                        } else {
+                            //automatic sms
+                            Intent sms = new Intent(getApplicationContext(), Services.class);
+                            sms.setAction(Services.ACTION_SEND_SMS);
+                            sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                            sms.putExtra("loc", loc);
+                            startService(sms);
+                        }
 
                         notify_cancelled = true;
                         dismissed = true;
@@ -503,7 +536,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                 if(resultCode == RESULT_OK){
                     //photo taken
 
-                    if(location_for_picture == null){
+                    if(location_variable == null){
                         Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_take_a_picture_no_gps), Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -512,7 +545,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                     Intent i = new Intent(getApplicationContext(), Services.class);
                     i.setAction(Services.ACTION_TAKE_A_PICTURE);
                     i.putExtra("image_path", ImageAbsolutePath);
-                    i.putExtra("loc", location_for_picture);
+                    i.putExtra("loc", location_variable);
                     //start service
                     startService(i);
 
@@ -524,7 +557,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
     public void takeAPicture(){
 
-        if(location_for_picture == null){
+        if(location_variable == null){
             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_take_a_picture_no_gps), Toast.LENGTH_LONG).show();
             return;
         }

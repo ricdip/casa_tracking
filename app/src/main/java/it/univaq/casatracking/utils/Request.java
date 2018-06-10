@@ -296,8 +296,6 @@ public class Request extends AsyncTask<Object, Void, Object> {
 
     private Bitmap doDownloadImageRequest(Context context, String nome_foto, double lat, double lon){
 
-        //TODO : bug check download image request and Images class
-
         Bitmap bmp = null;
         //images helper
         Images mImages = Images.getInstance(context);
