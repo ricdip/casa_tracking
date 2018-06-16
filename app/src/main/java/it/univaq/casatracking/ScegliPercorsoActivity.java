@@ -41,8 +41,6 @@ import it.univaq.casatracking.utils.Request;
 
 public class ScegliPercorsoActivity extends AppCompatActivity {
 
-    //TODO : REMOVE PRINTF FOR DEBUG
-
     private RecyclerView recyclerView;
     private ProgressDialog progress;
     private Utente utente;
@@ -51,6 +49,7 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
 
     public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
     private boolean download_completed = false;
+
 
     /* LOCATION LISTENER */
     private LatLng location_variable;
@@ -97,6 +96,7 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
     };
     /* END LOCATION LISTENER */
 
+
     /* handler per redirect */
     private static final int TIMEOUT = 60*1000; //60 seconds
     private Handler redirectHandler = new Handler();
@@ -111,6 +111,7 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
         }
     };
     /* END handler per alert */
+
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -169,6 +170,7 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
             }
         }
     };
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -244,14 +246,10 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
         filter.addAction(ACTION_SERVICE_COMPLETED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, filter);
 
-        System.out.println("filter prepared");
-
         //start download service
         Intent intent = new Intent(getApplicationContext(), RequestService.class);
         intent.setAction(RequestService.ACTION_GET_PERCORSI);
         startService(intent);
-
-        System.out.println("start service");
     }
 
     @Override

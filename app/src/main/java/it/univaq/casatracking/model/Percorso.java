@@ -16,7 +16,7 @@ public class Percorso {
     }
 
     public Percorso(){
-        this.id = "" + 0 + "";
+        this.id = String.valueOf(0);
         this.nome = "";
         this.tempo = "";
 

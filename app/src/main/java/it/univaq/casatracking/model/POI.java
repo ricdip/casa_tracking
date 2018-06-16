@@ -20,9 +20,9 @@ public class POI {
     }
 
     public POI(){
-        this.id = "" + 0 + "";
+        this.id = String.valueOf(0);
         this.nome = "";
-        this.id_percorso = "" + 0 + "";
+        this.id_percorso = String.valueOf(0);
         this.foto = "";
         this.descrizione = "";
 

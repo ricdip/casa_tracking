@@ -24,8 +24,6 @@ import static android.content.ContentValues.TAG;
 
 public class RequestService extends IntentService {
 
-    //TODO : REMOVE PRINTF FOR DEBUG
-
     public static final String ACTION_MONITOR = "action_monitor";
     public static final String ACTION_GET_PERCORSI = "action_get_percorsi";
     public static final String ACTION_NAVIGAZIONE = "action_navigazione";
@@ -41,8 +39,6 @@ public class RequestService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        System.out.println("start service handle");
-
         if(intent != null && intent.getAction() != null){
             String action = intent.getAction();
             Intent response = null;
@@ -52,14 +48,20 @@ public class RequestService extends IntentService {
 
                 switch(action){
                     case ACTION_MONITOR:
-                        response = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
-                        response.setAction(NavigazioneLiberaActivity.ACTION_ALERT_SERVICE_COMPLETED);
+
+                        if(intent.getStringExtra("className").equals("POIActivity")){
+                            response = new Intent(getApplicationContext(), POIActivity.class);
+                            response.setAction(POIActivity.ACTION_ALERT_SERVICE_COMPLETED);
+                        } else {
+                            response = new Intent(getApplicationContext(), NavigazioneLiberaActivity.class);
+                            response.setAction(NavigazioneLiberaActivity.ACTION_ALERT_SERVICE_COMPLETED);
+                        }
+
                         result = monitor(getApplicationContext(), Preferences.loadUtente(getApplicationContext()), (LatLng) intent.getExtras().get("loc"));
 
                         break;
 
                     case ACTION_GET_PERCORSI:
-                        System.out.println("get percorsi handle");
                         response = new Intent(getApplicationContext(), ScegliPercorsoActivity.class);
                         response.setAction(ScegliPercorsoActivity.ACTION_SERVICE_COMPLETED);
                         result = getPercorsi(getApplicationContext(), Preferences.loadUtente(getApplicationContext()));
@@ -95,10 +97,6 @@ public class RequestService extends IntentService {
                         break;
 
                 }
-
-
-                System.out.println("data: " + result);
-                //response.putExtra("data", (String) result);
 
                 if(result instanceof String)
                     response.putExtra("data", (String) result);

@@ -57,18 +57,20 @@ import it.univaq.casatracking.utils.Timer;
 public class POIActivity extends AppCompatActivity {
 
     //TODO : DEGUG E REVISIONE classe POIActivity
+    //TODO : handling ACTION_ALERT_SERVICE_COMPLETED
 
     public static final String ACTION_NAVIGAZIONE_SERVICE_COMPLETED = "action_navigazione_service_completed";
     public static final String ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED = "action_download_photo_service_completed";
     public static final String ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED = "action_take_a_photo_service_completed";
+    public static final String ACTION_ALERT_SERVICE_COMPLETED = "action_alert_service_completed";
 
     private Utente utente;
     private Percorso percorso;
     private POI poi;
     private String alert;
 
-    String result_from_server;
-    Bitmap poi_image = null;
+    private String result_from_server;
+    private Bitmap poi_image = null;
 
     private ImageView navigazione_immagini_immagine;
     private TextView navigazione_immagini_descrizione;
@@ -90,6 +92,8 @@ public class POIActivity extends AppCompatActivity {
     private boolean timesup = false;
     private boolean send_sms = false;
 
+
+    /* Broadcastreceiver for service completed */
     private BroadcastReceiver receiver_for_services = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -105,7 +109,9 @@ public class POIActivity extends AppCompatActivity {
                     else
                         //not success
                         Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_not_success), Toast.LENGTH_SHORT).show();
+
                     break;
+
 
                 case ACTION_NAVIGAZIONE_SERVICE_COMPLETED:
                     result_from_server = intent.getStringExtra("data");
@@ -200,6 +206,8 @@ public class POIActivity extends AppCompatActivity {
             }
         }
     };
+    /* END Broadcastreceiver for service completed */
+
 
     /* handler per alert */
     private static int TIME_OUT_AUTOMATIC_ALERT;
@@ -214,6 +222,7 @@ public class POIActivity extends AppCompatActivity {
         }
     };
     /* END handler per alert */
+
 
     /* handler per autocall */
     //auto chiamata in 15 secondi
@@ -258,6 +267,7 @@ public class POIActivity extends AppCompatActivity {
         }
     };
     /* END handler per autocall */
+
 
     private LocationManager mManager;
     private LocationListener listener = new LocationListener() {
