@@ -34,11 +34,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.services.RequestService;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
 
 public class ScegliPercorsoActivity extends AppCompatActivity {
+
+    //TODO : REMOVE PRINTF FOR DEBUG
 
     private RecyclerView recyclerView;
     private ProgressDialog progress;
@@ -241,11 +244,14 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
         filter.addAction(ACTION_SERVICE_COMPLETED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, filter);
 
+        System.out.println("filter prepared");
+
         //start download service
-        Intent intent = new Intent(getApplicationContext(), Services.class);
-        intent.setAction(Services.ACTION_DOWNLOAD_PERCORSI);
+        Intent intent = new Intent(getApplicationContext(), RequestService.class);
+        intent.setAction(RequestService.ACTION_GET_PERCORSI);
         startService(intent);
 
+        System.out.println("start service");
     }
 
     @Override

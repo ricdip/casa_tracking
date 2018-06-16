@@ -62,6 +62,7 @@ public class PercorsiAdapter extends RecyclerView.Adapter<PercorsiAdapter.ViewHo
 
         @Override
         public void onClick(View v) {
+
             JSONObject percorso = data.optJSONObject(getAdapterPosition());
             Intent intent = new Intent(v.getContext(), POIActivity.class);
             intent.putExtra("percorso", percorso.toString());

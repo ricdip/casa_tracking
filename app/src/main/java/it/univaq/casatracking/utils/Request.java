@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -32,11 +31,9 @@ import java.net.URL;
 import it.univaq.casatracking.R;
 import it.univaq.casatracking.model.Utente;
 
-public class Request extends AsyncTask<Object, Void, Object> {
+public class Request {
 
-
-    @Override
-    protected Object doInBackground(Object... objects) {
+    public Object doMonitor(Object... objects) {
 
         Context context = (Context) objects[0];
         String request = (String) objects[1];

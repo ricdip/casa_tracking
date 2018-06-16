@@ -42,12 +42,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.File;
 
 import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.services.RequestService;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Images;
 import it.univaq.casatracking.utils.Player;
 import it.univaq.casatracking.utils.Preferences;
 import it.univaq.casatracking.utils.Request;
-import it.univaq.casatracking.utils.RequestHandler;
 
 public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -61,6 +61,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
     private Utente utente;
     private boolean notify_cancelled;
+
+    private String alert;
 
     private static final int TAKE_A_PICTURE = 0;
 
@@ -124,17 +126,18 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
     };
     /* END receiver for internet connection changes */
 
-    /* receiver for take a picture state */
-    public static final String ACTION_SERVICE_COMPLETED = "action_service_completed";
-    private BroadcastReceiver take_a_picture_receiver = new BroadcastReceiver() {
+    /* receiver for services */
+    public static final String ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED = "action_take_a_photo_service_completed";
+    public static final String ACTION_ALERT_SERVICE_COMPLETED = "action_alert_service_completed";
+    private BroadcastReceiver receiver_for_services = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
             if(intent == null || intent.getAction() == null) return;
 
             switch (intent.getAction()){
-                case ACTION_SERVICE_COMPLETED:
-                    boolean success = intent.getBooleanExtra("success", false);
+                case ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED:
+                    boolean success = intent.getBooleanExtra("data", false);
 
                     if(success)
                         //success
@@ -145,17 +148,31 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
                     break;
 
+                case ACTION_ALERT_SERVICE_COMPLETED:
+                    alert = intent.getStringExtra("data");
+
+                    // if error return
+                    if(alert == null) {
+                        return;
+                    }
+
+                    if(alert.equals("1") && (!notify_cancelled)){
+                        //utente fuori area sicura
+                        alert(location_variable);
+                    }
+
+                    break;
+
             }
 
         }
     };
-    /* END receiver for take a picture state */
+    /* END receiver for services */
 
     /* location change listener */
     private LocationListener listener = new LocationListener() {
 
         private Marker myMarker;
-        private LatLng loc;
         MarkerOptions options = new MarkerOptions();
 
         boolean isGPSready = false;
@@ -164,6 +181,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         public void onLocationChanged(Location location) {
 
             String provider = location.getProvider();
+            //System.out.println(location);
 
             if(provider.equals(LocationManager.GPS_PROVIDER)){
                 if(!isGPSready)
@@ -179,14 +197,12 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
             double lat = location.getLatitude();
             double lng = location.getLongitude();
 
-            loc = new LatLng(lat, lng);
-            //for func take_a_picture
-            location_variable = loc;
+            location_variable = new LatLng(lat, lng);
 
             //opzioni
             //options = new MarkerOptions();
 
-            options.position(loc);
+            options.position(location_variable);
             options.title("SONO QUI");
             /*options.snippet("info")*/
 
@@ -197,22 +213,20 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                     myMarker.remove();
 
                 myMarker = mMap.addMarker(options);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 18f));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location_variable, 18f));
 
             }
 
             //retrieve response
-            String alert = RequestHandler.monitor(getApplicationContext(), utente, loc);
+            //alert = RequestHandler2.monitor(getApplicationContext(), utente, loc);
 
-            // if error return
-            if(alert == null) {
-                return;
-            }
-
-            if(alert.equals("1") && (!notify_cancelled)){
-                //utente fuori area sicura
-                alert(loc);
-            }
+            //prepare service
+            Intent i = new Intent(getApplicationContext(), RequestService.class);
+            i.setAction(RequestService.ACTION_MONITOR);
+            i.putExtra("loc", location_variable);
+            i.putExtra("className", "NavigazioneLiberaActivity");
+            //start service
+            startService(i);
 
         }
         //END onLocationChanged
@@ -291,8 +305,8 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         //preparing take a picture
         IntentFilter filter_take_a_picture_receiver = new IntentFilter();
-        filter_take_a_picture_receiver.addAction(ACTION_SERVICE_COMPLETED);
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(take_a_picture_receiver, filter_take_a_picture_receiver);
+        filter_take_a_picture_receiver.addAction(ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_take_a_picture_receiver);
 
         if(!Request.isConnected(getApplicationContext())){
             //snackbar creation
@@ -309,6 +323,44 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             return;
         }
+
+        //preparing take a picture
+        IntentFilter filter_alert_receiver = new IntentFilter();
+        filter_alert_receiver.addAction(ACTION_ALERT_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_alert_receiver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if(isReceiverRegistered){
+            getApplicationContext().unregisterReceiver(receiver);
+            isReceiverRegistered = false;
+        }
+
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver_for_services);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(mManager != null){
+            mManager.removeUpdates(listener);
+            mManager = null;
+        }
+    }
+
+
+    /* metodo chiamato quando la mappa è pronta */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        //disabilita gestures sulla mappa
+        mMap.getUiSettings().setAllGesturesEnabled(false);
+        // Sets the map type to be "normal"
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         //access location
         mManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -331,39 +383,6 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
         }
 
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        if(isReceiverRegistered){
-            getApplicationContext().unregisterReceiver(receiver);
-            isReceiverRegistered = false;
-        }
-
-        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(take_a_picture_receiver);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if(mManager != null){
-            mManager.removeUpdates(listener);
-            mManager = null;
-        }
-    }
-
-
-    /* metodo chiamato quando la mappa è pronta */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        //disabilita gestures sulla mappa
-        mMap.getUiSettings().setAllGesturesEnabled(false);
-        // Sets the map type to be "normal"
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
     }
 
 
@@ -542,10 +561,11 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
                     }
 
                     //prepare service
-                    Intent i = new Intent(getApplicationContext(), Services.class);
-                    i.setAction(Services.ACTION_TAKE_A_PICTURE);
+                    Intent i = new Intent(getApplicationContext(), RequestService.class);
+                    i.setAction(RequestService.ACTION_UPLOAD_IMAGE);
                     i.putExtra("image_path", ImageAbsolutePath);
                     i.putExtra("loc", location_variable);
+                    i.putExtra("className", "NavigazioneLiberaActivity");
                     //start service
                     startService(i);
 

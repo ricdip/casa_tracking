@@ -47,6 +47,8 @@
         <!-- SERVICES -->
         <service android:name=".services.Services" />
 
+        <service android:name=".services.RequestService" />
+
         <!-- FIREBASE SEVICES -->
         <service
             android:name=".services.CasaTrackingFirebaseMessagingService">

@@ -3,9 +3,13 @@ package it.univaq.casatracking;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -18,6 +22,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -42,21 +47,28 @@ import java.io.File;
 import it.univaq.casatracking.model.POI;
 import it.univaq.casatracking.model.Percorso;
 import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.services.RequestService;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Images;
 import it.univaq.casatracking.utils.Player;
 import it.univaq.casatracking.utils.Preferences;
-import it.univaq.casatracking.utils.RequestHandler;
 import it.univaq.casatracking.utils.Timer;
 
 public class POIActivity extends AppCompatActivity {
 
     //TODO : DEGUG E REVISIONE classe POIActivity
 
+    public static final String ACTION_NAVIGAZIONE_SERVICE_COMPLETED = "action_navigazione_service_completed";
+    public static final String ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED = "action_download_photo_service_completed";
+    public static final String ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED = "action_take_a_photo_service_completed";
+
     private Utente utente;
     private Percorso percorso;
     private POI poi;
     private String alert;
+
+    String result_from_server;
+    Bitmap poi_image = null;
 
     private ImageView navigazione_immagini_immagine;
     private TextView navigazione_immagini_descrizione;
@@ -77,6 +89,117 @@ public class POIActivity extends AppCompatActivity {
 
     private boolean timesup = false;
     private boolean send_sms = false;
+
+    private BroadcastReceiver receiver_for_services = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent == null || intent.getAction() == null) return;
+
+            switch(intent.getAction()){
+                case ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED:
+                    boolean success = intent.getBooleanExtra("data", false);
+
+                    if(success)
+                        //success
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_success), Toast.LENGTH_SHORT).show();
+                    else
+                        //not success
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_photo_upload_not_success), Toast.LENGTH_SHORT).show();
+                    break;
+
+                case ACTION_NAVIGAZIONE_SERVICE_COMPLETED:
+                    result_from_server = intent.getStringExtra("data");
+
+                    if(result_from_server == null){
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_poi_error), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    try {
+
+                        JSONObject navigazione_json = new JSONObject(result_from_server);
+
+                        //alert retrieve
+                        if(navigazione_json.get("alert") instanceof Integer)
+                            alert = String.valueOf((Integer)navigazione_json.get("alert"));
+                        else
+                            alert = (String)navigazione_json.get("alert");
+
+                        //pois retrieve
+                        if(navigazione_json.has("pois")){
+                            JSONArray array = navigazione_json.getJSONArray("pois");
+                            Gson gson = new Gson();
+                            POI newpoi = gson.fromJson(array.getJSONObject(0).toString(), POI.class);
+
+                            if(poi == null){
+                                //first poi
+                                poi = newpoi;
+                                navigazione_immagini_titolo.setText(poi.getNome());
+                                navigazione_immagini_descrizione.setText(poi.getDescrizione());
+                                //prepare service
+                                Intent retrieve_image = new Intent(getApplicationContext(), RequestService.class);
+                                retrieve_image.setAction(RequestService.ACTION_DOWNLOAD_IMAGE);
+                                retrieve_image.putExtra("nome_foto", poi.getFoto());
+                                retrieve_image.putExtra("loc", location_variable);
+
+                                //start service
+                                startService(retrieve_image);
+
+                                //navigazione_immagini_immagine.setImageBitmap(RequestHandler2.downloadImage(getApplicationContext(), poi.getFoto(), loc));
+
+                                timer.startTimer();
+
+                                Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_new_poi), Toast.LENGTH_SHORT).show();
+                            }
+
+                            if(poi.getId() != newpoi.getId()){
+                                //poi change
+                                poi = newpoi;
+                                navigazione_immagini_titolo.setText(poi.getNome());
+                                navigazione_immagini_descrizione.setText(poi.getDescrizione());
+
+                                //prepare service
+                                Intent retrieve_image = new Intent(getApplicationContext(), RequestService.class);
+                                retrieve_image.setAction(RequestService.ACTION_DOWNLOAD_IMAGE);
+                                retrieve_image.putExtra("nome_foto", poi.getFoto());
+                                retrieve_image.putExtra("loc", location_variable);
+
+                                //start service
+                                startService(retrieve_image);
+                                //navigazione_immagini_immagine.setImageBitmap(RequestHandler2.downloadImage(getApplicationContext(), poi.getFoto(), loc));
+
+                                Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_new_poi), Toast.LENGTH_SHORT).show();
+                            }
+
+                        } else {
+                            poi = null;
+                            navigazione_immagini_titolo.setText(getApplicationContext().getString(R.string.toast_no_pois));
+                            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_pois), Toast.LENGTH_SHORT).show();
+                        }
+
+                        //alert check
+                        if(alert.equals("1") && !notify_cancelled)
+                            alert(location_variable);
+
+                        //debug
+                        System.out.println("alert: " + alert);
+                        //debug
+                        System.out.println(poi);
+
+
+                    } catch(JSONException e){
+                        e.printStackTrace();
+                    }
+
+                    break;
+
+                case ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED:
+                    poi_image = (Bitmap) intent.getExtras().get("data");
+                    navigazione_immagini_immagine.setImageBitmap(poi_image);
+                    break;
+            }
+        }
+    };
 
     /* handler per alert */
     private static int TIME_OUT_AUTOMATIC_ALERT;
@@ -139,8 +262,6 @@ public class POIActivity extends AppCompatActivity {
     private LocationManager mManager;
     private LocationListener listener = new LocationListener() {
 
-        private LatLng loc;
-
         boolean isGPSready = false;
 
         @Override
@@ -161,75 +282,19 @@ public class POIActivity extends AppCompatActivity {
             double lat = location.getLatitude();
             double lng = location.getLongitude();
 
-            loc = new LatLng(lat, lng);
-            location_variable = loc;
+            location_variable = new LatLng(lat, lng);
 
-            String res = RequestHandler.navigazione(getApplicationContext(), utente, loc, percorso.getId(), alert);
+            //String res = RequestHandler2.navigazione(getApplicationContext(), utente, loc, percorso.getId(), alert);
+            //prepare service
+            Intent retrieve_alert = new Intent(getApplicationContext(), RequestService.class);
+            retrieve_alert.setAction(RequestService.ACTION_NAVIGAZIONE);
+            retrieve_alert.putExtra("loc", location_variable);
+            retrieve_alert.putExtra("id_percorso", percorso.getId());
+            //TODO : HANDLE ALERT
+            retrieve_alert.putExtra("alert", alert);
 
-            if(res == null){
-                Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_poi_error), Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            try {
-
-                JSONObject navigazione_json = new JSONObject(res);
-
-                //alert retrieve
-                if(navigazione_json.get("alert") instanceof Integer)
-                    alert = String.valueOf((Integer)navigazione_json.get("alert"));
-                else
-                    alert = (String)navigazione_json.get("alert");
-
-                //pois retrieve
-                if(navigazione_json.has("pois")){
-                    JSONArray array = navigazione_json.getJSONArray("pois");
-                    Gson gson = new Gson();
-                    POI newpoi = gson.fromJson(array.getJSONObject(0).toString(), POI.class);
-
-                    if(poi == null){
-                        //first poi
-                        poi = newpoi;
-                        navigazione_immagini_titolo.setText(poi.getNome());
-                        navigazione_immagini_descrizione.setText(poi.getDescrizione());
-                        navigazione_immagini_immagine.setImageBitmap(RequestHandler.downloadImage(getApplicationContext(), poi.getFoto(), loc));
-
-                        timer.startTimer();
-
-                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_new_poi), Toast.LENGTH_SHORT).show();
-                    }
-
-                    if(poi.getId() != newpoi.getId()){
-                        //poi change
-                        poi = newpoi;
-                        navigazione_immagini_titolo.setText(poi.getNome());
-                        navigazione_immagini_descrizione.setText(poi.getDescrizione());
-                        navigazione_immagini_immagine.setImageBitmap(RequestHandler.downloadImage(getApplicationContext(), poi.getFoto(), loc));
-
-                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_new_poi), Toast.LENGTH_SHORT).show();
-                    }
-
-                } else {
-                    poi = null;
-                    navigazione_immagini_titolo.setText(getApplicationContext().getString(R.string.toast_no_pois));
-                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_pois), Toast.LENGTH_SHORT).show();
-                }
-
-                //alert check
-                if(alert.equals("1") && !notify_cancelled)
-                    alert(loc);
-
-                //debug
-                System.out.println("alert: " + alert);
-                //debug
-                System.out.println(poi);
-
-
-            } catch(JSONException e){
-                e.printStackTrace();
-            }
-
-
+            //start service
+            startService(retrieve_alert);
         }
 
         @Override
@@ -328,6 +393,21 @@ public class POIActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        //preparing take a picture
+        IntentFilter filter_download_photo_receiver = new IntentFilter();
+        filter_download_photo_receiver.addAction(ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_download_photo_receiver);
+
+        //preparing take a picture
+        IntentFilter filter_take_a_picture_receiver = new IntentFilter();
+        filter_take_a_picture_receiver.addAction(ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_take_a_picture_receiver);
+
+        //preparing take a picture
+        IntentFilter filter_navigazione_receiver = new IntentFilter();
+        filter_navigazione_receiver.addAction(ACTION_NAVIGAZIONE_SERVICE_COMPLETED);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_navigazione_receiver);
+
         //access location
         mManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -354,6 +434,8 @@ public class POIActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver_for_services);
     }
 
     @Override
@@ -552,9 +634,10 @@ public class POIActivity extends AppCompatActivity {
 
                     //prepare service
                     Intent i = new Intent(getApplicationContext(), Services.class);
-                    i.setAction(Services.ACTION_TAKE_A_PICTURE);
+                    i.setAction(RequestService.ACTION_UPLOAD_IMAGE);
                     i.putExtra("image_path", ImageAbsolutePath);
                     i.putExtra("loc", location_variable);
+                    i.putExtra("className", "POIActivity");
                     //start service
                     startService(i);
 
