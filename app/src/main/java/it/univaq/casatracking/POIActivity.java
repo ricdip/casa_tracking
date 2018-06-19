@@ -13,12 +13,14 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -52,12 +54,13 @@ import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Images;
 import it.univaq.casatracking.utils.Player;
 import it.univaq.casatracking.utils.Preferences;
+import it.univaq.casatracking.utils.Request;
 import it.univaq.casatracking.utils.Timer;
 
 public class POIActivity extends AppCompatActivity {
 
     //TODO : DEGUG E REVISIONE classe POIActivity
-    //TODO : handling ACTION_ALERT_SERVICE_COMPLETED
+    //TODO : handling possible ACTION_ALERT_SERVICE_COMPLETED
 
     public static final String ACTION_NAVIGAZIONE_SERVICE_COMPLETED = "action_navigazione_service_completed";
     public static final String ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED = "action_download_photo_service_completed";
@@ -67,7 +70,8 @@ public class POIActivity extends AppCompatActivity {
     private Utente utente;
     private Percorso percorso;
     private POI poi;
-    private String alert;
+    //TODO : VEDERE SE GIUSTO ALERT O NECESSITA DI COLLEGAMENTO A SERVER PER PRENDERLA
+    private String alert = "0";
 
     private String result_from_server;
     private Bitmap poi_image = null;
@@ -90,7 +94,6 @@ public class POIActivity extends AppCompatActivity {
     private boolean notify_cancelled;
 
     private boolean timesup = false;
-    private boolean send_sms = false;
 
 
     /* Broadcastreceiver for service completed */
@@ -101,7 +104,7 @@ public class POIActivity extends AppCompatActivity {
 
             switch(intent.getAction()){
                 case ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED:
-                    boolean success = intent.getBooleanExtra("data", false);
+                    boolean success = ((Boolean) intent.getExtras().get("data")).booleanValue();
 
                     if(success)
                         //success
@@ -251,7 +254,13 @@ public class POIActivity extends AppCompatActivity {
                 doAlert.setAction(Services.ACTION_ALERT);
                 //pattern link: https://www.google.com/maps/@42.0458585,13.9318123,15z
                 //http://maps.google.com/maps?z=18&q=10.8061,106.7130
-                doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+
+                if(!timesup)
+                    doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                else
+                    doAlert.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI; TEMPO SCADUTO");
+
+
                 doAlert.putExtra("loc",  autoCallRunnableLatLng);
 
                 startService(doAlert);
@@ -267,6 +276,20 @@ public class POIActivity extends AppCompatActivity {
         }
     };
     /* END handler per autocall */
+
+    /* receiver for internet connection changes */
+    private static boolean isReceiverRegistered = false;
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //entro in receiver e la connessione è stata ristabilita, ridisegnamo la finestra
+            if(Request.isConnected(getApplicationContext())){
+                onResume();
+            }
+
+        }
+    };
+    /* END receiver for internet connection changes */
 
 
     private LocationManager mManager;
@@ -300,7 +323,6 @@ public class POIActivity extends AppCompatActivity {
             retrieve_alert.setAction(RequestService.ACTION_NAVIGAZIONE);
             retrieve_alert.putExtra("loc", location_variable);
             retrieve_alert.putExtra("id_percorso", percorso.getId());
-            //TODO : HANDLE ALERT
             retrieve_alert.putExtra("alert", alert);
 
             //start service
@@ -319,8 +341,8 @@ public class POIActivity extends AppCompatActivity {
 
         @Override
         public void onProviderDisabled(String s) {
-            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_LONG).show();
-            navigazione_immagini_titolo.setText("GPS DISATTIVATO");
+            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_gps), Toast.LENGTH_SHORT).show();
+            navigazione_immagini_titolo.setText(getApplicationContext().getString(R.string.toast_no_gps));
             navigazione_immagini_descrizione.setText("");
             navigazione_immagini_timeout.setText("");
             navigazione_immagini_immagine.setImageDrawable(getApplicationContext().getDrawable(android.R.drawable.screen_background_light));
@@ -403,7 +425,7 @@ public class POIActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        //preparing take a picture
+        //preparing download photo
         IntentFilter filter_download_photo_receiver = new IntentFilter();
         filter_download_photo_receiver.addAction(ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_download_photo_receiver);
@@ -413,10 +435,26 @@ public class POIActivity extends AppCompatActivity {
         filter_take_a_picture_receiver.addAction(ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_take_a_picture_receiver);
 
-        //preparing take a picture
+        //preparing navigazione request
         IntentFilter filter_navigazione_receiver = new IntentFilter();
         filter_navigazione_receiver.addAction(ACTION_NAVIGAZIONE_SERVICE_COMPLETED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_navigazione_receiver);
+
+        if(!Request.isConnected(getApplicationContext())){
+            //snackbar creation
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.navigazioneimmagini_constraint), getApplicationContext().getString(R.string.snackbar_no_internet), Snackbar.LENGTH_LONG);
+            snackbar.show();
+
+            //preparo intent per ripresa connessione
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+            //receiver registrato
+            isReceiverRegistered = true;
+            getApplicationContext().registerReceiver(receiver, filter);
+
+            return;
+        }
 
         //access location
         mManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -444,6 +482,11 @@ public class POIActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+
+        if(isReceiverRegistered){
+            getApplicationContext().unregisterReceiver(receiver);
+            isReceiverRegistered = false;
+        }
 
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver_for_services);
     }
@@ -533,7 +576,11 @@ public class POIActivity extends AppCompatActivity {
                         doAlert.setAction(Services.ACTION_ALERT);
                         //https://www.google.com/maps/@42.0458585,13.9318123,15z
                         //http://maps.google.com/maps?z=18&q=10.8061,106.7130
-                        doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                        if(!timesup)
+                            doAlert.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                        else
+                            doAlert.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI; TEMPO SCADUTO");
+
                         doAlert.putExtra("loc", loc);
                         startService(doAlert);
 
@@ -566,7 +613,13 @@ public class POIActivity extends AppCompatActivity {
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             Intent sms = new Intent(getApplicationContext(), Services.class);
                                             sms.setAction(Services.ACTION_SEND_SMS);
-                                            sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+
+                                            if(!timesup)
+                                                sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                                            else
+                                                sms.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI; TEMPO SCADUTO");
+
+
                                             sms.putExtra("loc", loc);
                                             startService(sms);
 
@@ -586,7 +639,12 @@ public class POIActivity extends AppCompatActivity {
                             //automatic sms
                             Intent sms = new Intent(getApplicationContext(), Services.class);
                             sms.setAction(Services.ACTION_SEND_SMS);
-                            sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+
+                            if(!timesup)
+                                sms.putExtra("sms_body", "SONO FUORI DALLA MIA AREA SICURA");
+                            else
+                                sms.putExtra("sms_body", "NAVIGAZIONE PER IMMAGINI; TEMPO SCADUTO");
+
                             sms.putExtra("loc", loc);
                             startService(sms);
                         }

@@ -33,7 +33,7 @@ import it.univaq.casatracking.model.Utente;
 
 public class Request {
 
-    public Object doMonitor(Object... objects) {
+    public Object doRequest(Object... objects) {
 
         Context context = (Context) objects[0];
         String request = (String) objects[1];

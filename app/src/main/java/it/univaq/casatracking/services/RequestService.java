@@ -94,6 +94,13 @@ public class RequestService extends IntentService {
 
                         result = uploadImage(getApplicationContext(), (String) intent.getExtras().get("image_path"), (LatLng) intent.getExtras().get("loc"));
 
+                        if(result.equals("0"))
+                            result = Boolean.TRUE;
+                        else if(result.equals("1"))
+                            result = Boolean.FALSE;
+                        else
+                            result = Boolean.FALSE;
+
                         break;
 
                 }
@@ -105,7 +112,8 @@ public class RequestService extends IntentService {
                 else if(result instanceof Boolean)
                     response.putExtra("data", (Boolean) result);
                 else
-                    response.putExtra("data", "Error in store value in Intent");
+                    response.putExtra("data", (String) null);
+
 
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(response);
 
@@ -126,7 +134,7 @@ public class RequestService extends IntentService {
         try {
             request = new Request();
 
-            result = (String) request.doMonitor(context, "monitor", utente, loc);
+            result = (String) request.doRequest(context, "monitor", utente, loc);
 
             alert_json = new JSONObject(result);
 
@@ -150,7 +158,7 @@ public class RequestService extends IntentService {
     public static String getPercorsi(Context context, Utente utente){
 
         Request request = new Request();
-        String result = (String) request.doMonitor(context, "get_percorsi", utente);
+        String result = (String) request.doRequest(context, "get_percorsi", utente);
 
         // print response (debug)
         if(result.equals("")){
@@ -169,7 +177,7 @@ public class RequestService extends IntentService {
 
         try {
             request = new Request();
-            result = (String) request.doMonitor(context, "navigazione", utente, loc, new Integer(id_percorso), alert);
+            result = (String) request.doRequest(context, "navigazione", utente, loc, new Integer(id_percorso), alert);
 
             result_json = new JSONObject(result);
 
@@ -196,7 +204,7 @@ public class RequestService extends IntentService {
 
         try {
             request = new Request();
-            result = request.doMonitor(context, "download_image", nome_foto, loc);
+            result = request.doRequest(context, "download_image", nome_foto, loc);
 
             if(result instanceof String){
                 result_json = new JSONObject((String) result);
@@ -228,7 +236,7 @@ public class RequestService extends IntentService {
 
         try {
             request = new Request();
-            result = (String) request.doMonitor(context, "upload_image", image_path, loc);
+            result = (String) request.doRequest(context, "upload_image", image_path, loc);
 
             result_json = new JSONObject(result);
 
@@ -239,6 +247,13 @@ public class RequestService extends IntentService {
                 return result;
             }
             // /print response (debug)
+
+            if(result_json.has("photo")){
+                int photo = result_json.getInt("photo");
+                return String.valueOf(photo);
+            }
+
+            Log.d(TAG, "error in uploading image");
 
         } catch(JSONException e){
             e.printStackTrace();

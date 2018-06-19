@@ -137,7 +137,7 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
 
             switch (intent.getAction()){
                 case ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED:
-                    boolean success = intent.getBooleanExtra("data", false);
+                    boolean success = ((Boolean) intent.getExtras().get("data")).booleanValue();
 
                     if(success)
                         //success
