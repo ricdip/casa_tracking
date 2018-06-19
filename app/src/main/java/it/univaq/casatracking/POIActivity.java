@@ -59,9 +59,6 @@ import it.univaq.casatracking.utils.Timer;
 
 public class POIActivity extends AppCompatActivity {
 
-    //TODO : DEGUG E REVISIONE classe POIActivity
-    //TODO : handling possible ACTION_ALERT_SERVICE_COMPLETED
-
     public static final String ACTION_NAVIGAZIONE_SERVICE_COMPLETED = "action_navigazione_service_completed";
     public static final String ACTION_DOWNLOAD_PHOTO_SERVICE_COMPLETED = "action_download_photo_service_completed";
     public static final String ACTION_TAKE_A_PHOTO_SERVICE_COMPLETED = "action_take_a_photo_service_completed";
@@ -183,19 +180,13 @@ public class POIActivity extends AppCompatActivity {
                         } else {
                             poi = null;
                             navigazione_immagini_titolo.setText(getApplicationContext().getString(R.string.toast_no_pois));
-                            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.toast_no_pois), Toast.LENGTH_SHORT).show();
                         }
 
                         //alert check
                         if(alert.equals("1") && !notify_cancelled)
                             alert(location_variable);
 
-                        //debug
-                        System.out.println("alert: " + alert);
-                        //debug
-                        System.out.println(poi);
-
-
+                        
                     } catch(JSONException e){
                         e.printStackTrace();
                     }
@@ -413,11 +404,14 @@ public class POIActivity extends AppCompatActivity {
 
         setTitle(percorso.getNome());
 
-        timer = Timer.getInstance(getApplicationContext(), percorso.getTempo()*1000);
+        //tempo percorso in minuti
+        int time = percorso.getTempo()*1000*60;
+
+        timer = Timer.getInstance(getApplicationContext(), time);
 
         //ALERT IN x% TEMPO_PERCORSO
         //tempo percorso in secondi
-        TIME_OUT_AUTOMATIC_ALERT = (Preferences.loadPercentageTimeoutTimer(getApplicationContext())*(percorso.getTempo()*1000))/100;
+        TIME_OUT_AUTOMATIC_ALERT = ( Preferences.loadPercentageTimeoutTimer(getApplicationContext())*( time ) ) / 100;
 
     }
 

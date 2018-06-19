@@ -101,7 +101,7 @@ public class Images {
             options.inSampleSize=8;
             Bitmap bit = BitmapFactory.decodeStream(in,null,options);
             Bitmap bitmap = Bitmap.createScaledBitmap(bit, 480, 640, true);
-            File newPicture = new File(imagepath.replace(".jpg", "_scaled") + ".jpg");
+            File newPicture = new File(imagepath.replace(".jpg", "s") + ".jpg");
 
             //export to out
             out = new FileOutputStream(newPicture);

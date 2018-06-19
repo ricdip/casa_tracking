@@ -335,14 +335,12 @@ public class Request {
                 success = false;
             }
 
+            /*System.out.println("\nSending 'GET' request to URL : " + address);
+            System.out.println("Response Code : " + responseCode + "\nsuccess: " + success);*/
+
             if(!success){
                 return null;
             }
-
-            /*
-            System.out.println("\nSending 'GET' request to URL : " + address);
-            System.out.println("Response Code : " + responseCode + "\nsuccess: " + success);
-            */
 
             //success, create image
             bmp = mImages.saveImage(nome_foto, con.getInputStream());

@@ -37,7 +37,7 @@ public class Timer extends CountDownTimer {
     @Override
     public void onTick(long millisRemaining) {
 
-        String time_remaining = "RIMANENTE: " + (millisRemaining/1000);
+        String time_remaining = "RIMANENTE: " + (millisRemaining/1000) + " sec";
         POIActivity.navigazione_immagini_timeout.setText(time_remaining);
 
     }

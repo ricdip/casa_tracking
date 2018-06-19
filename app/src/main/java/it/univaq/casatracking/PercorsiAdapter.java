@@ -32,6 +32,7 @@ public class PercorsiAdapter extends RecyclerView.Adapter<PercorsiAdapter.ViewHo
         holder.title.setText(title_string);
 
         String subtitle_string = "Durata: " + item.optString("tempo", "- - -");
+        subtitle_string += " minuti";
         holder.subtitle.setText(subtitle_string);
     }
 
