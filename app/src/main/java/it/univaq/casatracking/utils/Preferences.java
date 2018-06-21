@@ -147,4 +147,20 @@ public class Preferences {
         return automaticSMS;
     }
 
+    public static void saveFirebaseToken(Context context, String tokenID){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("firebase_token", tokenID.trim());
+
+        editor.apply();
+    }
+
+    public static String loadFirebaseToken(Context context){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String tokenID = pref.getString("firebase_token", "");
+
+        return tokenID;
+    }
 }

@@ -11,6 +11,9 @@ $result = '';
 if(isset($_GET["task"])) 
 	$task = $_GET["task"];
 
+if(isset($_POST["task"])) 
+	$task = $_POST["task"];
+
 if(!empty($task)){
 
 	switch ($task) {
@@ -24,13 +27,13 @@ if(!empty($task)){
 			}
 			break;
 
-		case 'store_token':
-			if(isset($_GET["token"]) && isset($_GET["phone"]) &&  isset($_GET["userName"])){
-				$token = $_GET["token"];
-				$phone = $_GET["phone"];
-				$userName = $_GET["userName"];
+		case 'store_data':
+			if(isset($_POST["token"]) && isset($_POST["phone"]) &&  isset($_POST["userName"])){
+				$token = $_POST["token"];
+				$phone = $_POST["phone"];
+				$userName = $_POST["userName"];
 
-				$result = storeTokenID($token, $phone, $userName);
+				$result = storeData($token, $phone, $userName);
 			}
 			break;
 

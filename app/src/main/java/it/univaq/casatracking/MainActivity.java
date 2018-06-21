@@ -17,11 +17,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.multidots.fingerprintauth.AuthErrorCodes;
 import com.multidots.fingerprintauth.FingerPrintAuthCallback;
 import com.multidots.fingerprintauth.FingerPrintAuthHelper;
 import com.multidots.fingerprintauth.FingerPrintUtils;
 
+import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Preferences;
 
 
@@ -156,6 +159,16 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
             messaggio.setText(getApplicationContext().getString(R.string.textview_scan_fingerprint));
             String login_text = "LOGIN COME " + Preferences.loadUtente(getApplicationContext()).getNome();
             loginButton.setText(login_text);
+
+            /* Send token if not sent */
+            if(!Preferences.loadFirebaseToken(getApplicationContext()).equals("")){
+                Gson gson = new Gson();
+                Intent i = new Intent(getApplicationContext(), Services.class);
+                i.setAction(Services.ACTION_SEND_DATA_TO_FIREBASE_SERVER);
+                i.putExtra("data", gson.toJson(Preferences.loadUtente(getApplicationContext()), Utente.class));
+                startService(i);
+            }
+            /* /Send token if not sent */
 
             mFingerPrintAuthHelper.startAuth();
         }

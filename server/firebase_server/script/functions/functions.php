@@ -35,31 +35,21 @@ function getPhones() {
 	return $results;
 }
 
-function storeTokenID($tokenID, $userPhone, $userName) {
+function storeData($tokenID, $userPhone, $userName) {
   	
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "firebasetokendb";
 	$msg = "";
+	$result = "";
 
-	// Create connection
-	$conn = new mysqli($servername, $username, $password, $dbname);
-	// Check connection
-	if ($conn->connect_error) {
-	    die("Connection failed: " . $conn->connect_error);
-	} 
+	$result = getTokenIDByPhone($userPhone);
 
-	$sql = "INSERT INTO data (user_phone, user_name, token) VALUES ('$userPhone', '$userName', '$tokenID')";
-
-	if ($conn->query($sql) === TRUE) {
-	    $msg = true;
+	if(!$result){
+		//insert
+		$msg = insertData($tokenID, $userPhone, $userName);
 	} else {
-	    $msg = "Error: " . $sql . "<br>" . $conn->error;
+		//update
+		$msg = updateData($tokenID, $userPhone, $userName);
 	}
-
-	$conn->close();
-
+	
 	return $msg;
 }
 
@@ -146,6 +136,64 @@ function sendNotify($tokenID, $serverTokenID) {
     curl_close ( $ch );
 
   	return $result;
+}
+
+
+function insertData($tokenID, $userPhone, $userName){
+
+	$servername = "localhost";
+	$username = "root";
+	$password = "";
+	$dbname = "firebasetokendb";
+	$msg = "";
+
+	// Create connection
+	$conn = new mysqli($servername, $username, $password, $dbname);
+	// Check connection
+	if ($conn->connect_error) {
+	    die("Connection failed: " . $conn->connect_error);
+	} 
+
+	$sql = "INSERT INTO data (user_phone, user_name, token) VALUES ('$userPhone', '$userName', '$tokenID')";
+
+	if ($conn->query($sql) === TRUE) {
+	    $msg = true;
+	} else {
+	    $msg = "Error: " . $sql . "<br>" . $conn->error;
+	}
+
+	$conn->close();
+
+	return $msg;
+}
+
+
+function updateData($tokenID, $userPhone, $userName){
+
+	$servername = "localhost";
+	$username = "root";
+	$password = "";
+	$dbname = "firebasetokendb";
+	$msg = "";
+
+	// Create connection
+	$conn = new mysqli($servername, $username, $password, $dbname);
+	// Check connection
+	if ($conn->connect_error) {
+	    die("Connection failed: " . $conn->connect_error);
+	} 
+
+	$sql = "UPDATE data SET user_phone='$userPhone', user_name='$userName', token='$tokenID' WHERE user_phone='$userPhone'";
+
+	if ($conn->query($sql) === TRUE) {
+	    $msg = true;
+	} else {
+	    $msg = "Error updating record: " . $conn->error;
+	}
+
+	$conn->close();
+
+	return $msg;
 }
 
 ?>

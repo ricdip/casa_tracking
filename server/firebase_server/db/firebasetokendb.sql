@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Creato il: Giu 20, 2018 alle 16:36
+-- Creato il: Giu 21, 2018 alle 11:51
 -- Versione del server: 5.7.19
 -- Versione PHP: 5.6.31
 
@@ -34,8 +34,9 @@ CREATE TABLE IF NOT EXISTS `data` (
   `user_phone` varchar(200) NOT NULL,
   `user_name` varchar(200) NOT NULL,
   `token` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_phone` (`user_phone`)
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

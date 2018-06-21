@@ -16,6 +16,9 @@
     <string name="server_path">http://www.smartengineers.eu/joomla/components/com_locationtracking/script/script.php</string>
     <string name="poi_images_path">http://www.smartengineers.eu/joomla/images/poi/</string>
 
+    <!-- TODO : STATIC IP SERVER -->
+    <string name="firebase_server_path">http://192.168.1.4/server/script/script.php</string>
+
     <!-- STRINGS -->
     <string name="preferenze">Preferenze</string>
     <string name="tel">Chiama</string>

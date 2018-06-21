@@ -7,18 +7,20 @@ body {
 
 .title_bar {
 
-    width: 50%;
+    width: 80%;
     margin: 0 auto;
     margin-bottom: 40px;
     margin-top: 40px;
     text-align: center;
+    font-family: Arial, Verdana, sans-serif;
+    font-weight: bold;
     color: white;
 
 }
 
 .form_container {
 
-    width: 50%;
+    width: 80%;
     margin: 0 auto;
     background-color: darkslategrey;
     padding: 20px;
@@ -73,7 +75,7 @@ body {
 
 .results {
 
-    width: 50%;
+    width: 80%;
     margin: 0 auto;
     margin-top: 40px;
     background-color: darkslategrey;
@@ -92,18 +94,49 @@ body {
 
 }
 
-@media screen and (max-width: 900px){ 
-
+@media only screen and (min-width: 768px) { 
+    /* For desktop: */
+    
     .form_container {
 
-        width: 90%;
+        width: 70%;
 
     }
 
     .results {
 
-        width: 90%;
+        width: 70%;
         
+    }
+
+}
+
+@media only screen and (max-width: 600px) {
+    /* For phones: */
+
+    .form_container {
+
+        width: 95%;
+
+    }
+
+    .results {
+
+        width: 95%;
+        
+    }
+
+    .title_bar {
+        width: 95%;
+    }
+
+
+    .input_field {
+        width: 60%;
+    }
+
+    .select_field {
+        width: 60%;
     }
 
 }

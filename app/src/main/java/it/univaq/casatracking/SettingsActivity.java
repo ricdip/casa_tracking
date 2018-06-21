@@ -1,5 +1,6 @@
 package it.univaq.casatracking;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -8,6 +9,10 @@ import android.preference.SwitchPreference;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.gson.Gson;
+
+import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -66,6 +71,13 @@ public class SettingsActivity extends AppCompatActivity {
                         Preferences.setAutomaticLoginNotEnabled(getContext());
 
                     preference.setSummary(nome_utente);
+
+                    //send update to firebase server
+                    Gson gson = new Gson();
+                    Utente utente = Preferences.loadUtente(getContext());
+                    utente.setNome(nome_utente);
+                    callServiceSendToken(gson.toJson(utente, Utente.class));
+
                     return true;
                 }
             });
@@ -83,9 +95,18 @@ public class SettingsActivity extends AppCompatActivity {
                         Preferences.setAutomaticLoginNotEnabled(getContext());
 
                     preference.setSummary(numero_telefono);
+
+                    //send update to firebase server
+                    Gson gson = new Gson();
+                    Utente utente = Preferences.loadUtente(getContext());
+                    utente.setNumeroTelefono(numero_telefono);
+                    callServiceSendToken(gson.toJson(utente, Utente.class));
+
                     return true;
                 }
             });
+
+
 
             numero_telefono_educatore.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
@@ -145,6 +166,13 @@ public class SettingsActivity extends AppCompatActivity {
             numero_telefono_educatore.setSummary(Preferences.load(getContext(),"numero_telefono_educatore"));
             numero_telefono_emergenza.setSummary(Preferences.load(getContext(), "numero_telefono_emergenza"));
             percentuale_scadenza_timeout.setSummary(String.valueOf(Preferences.loadPercentageTimeoutTimer(getContext()))  + "%");
+        }
+
+        public void callServiceSendToken(String utenteJSON){
+            Intent i = new Intent(getContext(), Services.class);
+            i.setAction(Services.ACTION_SEND_DATA_TO_FIREBASE_SERVER);
+            i.putExtra("data", utenteJSON);
+            getContext().startService(i);
         }
 
     }

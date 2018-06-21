@@ -8,12 +8,19 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.telephony.SmsManager;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
 
 import java.util.StringTokenizer;
 
+import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.utils.Preferences;
+import it.univaq.casatracking.utils.Request;
+
+import static android.content.ContentValues.TAG;
 
 public class Services extends IntentService {
 
@@ -21,6 +28,7 @@ public class Services extends IntentService {
     public static final String ACTION_CALL_EDUCATORE_WITH_SMS = "action_call_educatore_with_sms";
     public static final String ACTION_SEND_SMS = "action_send_sms";
     public static final String ACTION_ALERT = "action_alert";
+    public static final String ACTION_SEND_DATA_TO_FIREBASE_SERVER = "action_send_data_to_firebase_server";
 
     private static final String NAME = Services.class.getSimpleName();
 
@@ -48,6 +56,10 @@ public class Services extends IntentService {
 
                 case ACTION_ALERT:
                     alert(intent.getStringExtra("sms_body"), (LatLng) intent.getExtras().get("loc"));
+                    break;
+
+                case ACTION_SEND_DATA_TO_FIREBASE_SERVER:
+                    send_data_to_firebase_server(intent.getStringExtra("data"));
                     break;
 
             }
@@ -139,6 +151,33 @@ public class Services extends IntentService {
     private void alert(String body, LatLng loc){
         sendSMS(body, loc);
         callEducatore();
+    }
+
+    private void send_data_to_firebase_server(String utenteJSON){
+
+        Gson gson = new Gson();
+        Utente utente = gson.fromJson(utenteJSON, Utente.class);
+
+        //send update to firebase_server
+        String token = FirebaseInstanceId.getInstance().getToken();
+        boolean success = false;
+
+        if(!Request.isConnected(getApplicationContext())){
+            //save token in shared preferences
+            Preferences.saveFirebaseToken(getApplicationContext(), token);
+            Log.d(TAG, "Token stored in shared preferences: no internet connection");
+            return;
+        }
+
+        success = CasaTrackingFirebaseInstanceIDService.sendRegistrationToServer(token, getApplicationContext(), utente);
+
+        if(success){
+            Log.d(TAG, "Token successfully sent to server");
+            Preferences.saveFirebaseToken(getApplicationContext(), "");
+        } else{
+            Log.d(TAG, "Error in send token to server");
+            Preferences.saveFirebaseToken(getApplicationContext(), token);
+        }
     }
 
 }
