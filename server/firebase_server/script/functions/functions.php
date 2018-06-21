@@ -15,7 +15,7 @@ function getPhones() {
 	    die("Connection failed: " . $conn->connect_error);
 	} 
 
-	$sql = "SELECT user_phone FROM data";
+	$sql = "SELECT user_phone, user_name FROM data";
 	$result = $conn->query($sql);
 
 	if ($result->num_rows > 0) {
@@ -23,7 +23,7 @@ function getPhones() {
 		$results = array();
 		$i = 0;
 	    while($row = $result->fetch_assoc()) {
-	        $results[$i++] = $row["user_phone"];
+	        $results[$i++] = $row["user_phone"] . " - " . $row["user_name"];
 	    }
 
 	} else {
@@ -34,6 +34,7 @@ function getPhones() {
 
 	return $results;
 }
+
 
 function storeData($tokenID, $userPhone, $userName) {
   	
@@ -52,6 +53,7 @@ function storeData($tokenID, $userPhone, $userName) {
 	
 	return $msg;
 }
+
 
 function getTokenIDByPhone($userPhone) {
   	
@@ -88,6 +90,7 @@ function getTokenIDByPhone($userPhone) {
 	return $results;
 }
 
+
 function sendNotify($tokenID, $serverTokenID) {
   	
 	$url = "https://fcm.googleapis.com/fcm/send";
@@ -96,49 +99,78 @@ function sendNotify($tokenID, $serverTokenID) {
 
 	//setting http header
 	$headers = array (
-            'Authorization: key=' . "$serverTokenID",
-            'Content-Type: application/json'
+            "Authorization: key=$serverTokenID",
+            "Content-Type: application/json"
     );
 
 	//setting data
     $data = array (
                     "message" => $message
             );
-    $data = json_encode ( $data );
+    //$data = json_encode ( $data );
 	
     //setting notification data
-    /*
-    $fields = array (
-            'to' => array (
-                    trim($tokenID)
-            ),
-            'data' => array (
-                    $data
-            )
-    );*/
     $fields = array (
             'to' => trim($tokenID),
             'data' => $data
     );
-
     $fields = json_encode ( $fields );
 
     //send data to server
-    $ch = curl_init ();
-    curl_setopt ( $ch, CURLOPT_URL, $url );
-    curl_setopt ( $ch, CURLOPT_POST, true );
-    curl_setopt ( $ch, CURLOPT_HTTPHEADER, $headers );
-    curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
-    curl_setopt ( $ch, CURLOPT_POSTFIELDS, $fields );
-
-    $result = curl_exec ( $ch );
-    //echo $result;
-    curl_close ( $ch );
-
+    // use key 'http' even if you send the request to https://...
+	$options = array(
+	    'http' => array(
+	        'header'  => $headers,
+	        'method'  => 'POST',
+	        'content' => $fields
+	    )
+	);
+	$context  = stream_context_create( $options );
+	$result = file_get_contents($url, false, $context);
+	
   	return $result;
 }
 
 
+function getAllTokensID() {
+  	
+	$servername = "localhost";
+	$username = "root";
+	$password = "";
+	$dbname = "firebasetokendb";
+	$results = "";
+
+	// Create connection
+	$conn = new mysqli($servername, $username, $password, $dbname);
+	// Check connection
+	if ($conn->connect_error) {
+	    die("Connection failed: " . $conn->connect_error);
+	} 
+
+	$sql = "SELECT user_phone, token FROM data";
+	$result = $conn->query($sql);
+
+	if ($result->num_rows > 0) {
+	    // fill result array
+		$results = array();
+		$i = 0;
+	    while($row = $result->fetch_assoc()) {
+	        $results[$i++] = array($row["user_phone"] => $row["token"]);
+	    }
+
+	} else {
+	    $results = false;
+	}
+
+	$conn->close();
+
+	return $results;
+}
+
+
+/**
+ * DATABASE EDIT FUNCTIONS
+ **/
 function insertData($tokenID, $userPhone, $userName){
 
 	$servername = "localhost";

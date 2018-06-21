@@ -27,6 +27,18 @@ if(!empty($task)){
 			}
 			break;
 
+		case 'send_notify_all':
+			$tokens = getAllTokensID();
+			//send firebase message to all
+			$result = array();
+			foreach ($tokens as $key => $map){
+				foreach ($map as $phone => $tokenID) {
+					$send_return = sendNotify($tokenID, $SERVER_TOKEN_ID);
+					$result[] = array($phone => $send_return);
+				}
+			}
+			break;
+
 		case 'store_data':
 			if(isset($_POST["token"]) && isset($_POST["phone"]) &&  isset($_POST["userName"])){
 				$token = $_POST["token"];

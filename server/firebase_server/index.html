@@ -27,7 +27,7 @@
 			
 			<div class="select_field">
 				<select class="select" id="firebase_msg_select" name="phone">
-				  <option value="" disabled="disabled" selected="selected">User phone</option>
+				  <option value="" disabled="disabled" selected="selected">User phone - Name</option>
 				</select>
 			</div>
 
@@ -35,6 +35,16 @@
 				<input class="button_submit" type="submit" value="NOTIFY" />
 			</div>
 			
+			
+		</form>
+	</div>
+
+	<div class="form_container">
+		<form id="firebase_msg_all_form" onsubmit="form_submit_msg_all(); return false;" method="GET">
+			
+			<div class="input_field_no_top_space">
+				<input class="button_submit" type="submit" value="NOTIFY ALL" />
+			</div>
 			
 		</form>
 	</div>

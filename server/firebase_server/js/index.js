@@ -27,7 +27,7 @@ function receive(){
 				fillSelect(response);
 			}
 			else {
-				document.getElementById("resultParagraph").innerHTML = "RESULT : " + this.responseText;
+				//document.getElementById("resultParagraph").innerHTML = "RESULT : " + this.responseText;
 				document.getElementById("firebase_msg_select").disabled = true;
 				document.getElementById("firebase_msg_select").style.background = 'grey';
 			}
@@ -48,7 +48,7 @@ function fillSelect(response) {
 
  	for(var i=0; i < response.length; i++) {
 	   var opt = document.createElement("option");
-	   opt.value= response[i];
+	   opt.value= response[i].substring(0, response[i].indexOf('-') - 1);
 	   opt.innerHTML = response[i]; // whatever property it has
 
 	   // then append it to the select element
@@ -85,14 +85,49 @@ function sendNotify(phone){
 			var response = JSON.parse(this.responseText);
 			
 			if( !( (response == false) || (response == "false") ) ){
-				document.getElementById("resultParagraph").innerHTML = "RESULT : " + this.responseText;
+				alert(response);
+				document.getElementById("resultParagraph").innerHTML = "FIREBASE SEND SUCCESSFUL";
 			}
 			else {
-				document.getElementById("resultParagraph").innerHTML = "ERROR RESULT : " + this.responseText;
+				alert(response);
+				document.getElementById("resultParagraph").innerHTML = "ERROR IN FIREBASE SEND";
 			}
 		}
     };
 	xmlhttp.open("GET","script/script.php?task="+str + "&phone=" + phone,true);
   	xmlhttp.send();
 
+}
+
+function form_submit_msg_all(){
+
+	var str = 'send_notify_all';
+
+	if (window.XMLHttpRequest) {
+    // code for modern browsers
+    // IE7+, Firefox, Chrome, Opera, Safari
+    	xmlhttp = new XMLHttpRequest();
+ 	} else {
+    // code for old IE browsers
+    // IE6, IE5
+   		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+
+	xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          	
+			var response = JSON.parse(this.responseText);
+			
+			if( !( (response == false) || (response == "false") ) ){
+				alert(response);
+				document.getElementById("resultParagraph").innerHTML = "FIREBASE SEND ALL SUCCESSFUL";
+			}
+			else {
+				alert(response);
+				document.getElementById("resultParagraph").innerHTML = "ERROR IN FIREBASE SEND ALL";
+			}
+		}
+    };
+	xmlhttp.open("GET","script/script.php?task="+str,true);
+  	xmlhttp.send();
 }
