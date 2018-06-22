@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * GET ALL PHONE NUMBERS FROM DATABASE
+ **/
 function getPhones() {
   	
 	$servername = "localhost";
@@ -35,7 +38,9 @@ function getPhones() {
 	return $results;
 }
 
-
+/**
+ * UPDATE IF PHONE EXISTS OR INSERT DATA IN DATABASE
+ **/
 function storeData($tokenID, $userPhone, $userName) {
   	
 	$msg = "";
@@ -54,7 +59,9 @@ function storeData($tokenID, $userPhone, $userName) {
 	return $msg;
 }
 
-
+/**
+ * GET PHONE ASSOCIATED TOKEN FROM DATABASE
+ **/
 function getTokenIDByPhone($userPhone) {
   	
 	$servername = "localhost";
@@ -90,7 +97,9 @@ function getTokenIDByPhone($userPhone) {
 	return $results;
 }
 
-
+/**
+ * SEND FIREBASE NOTIFICATION FUNCTION
+ **/
 function sendNotify($tokenID, $serverTokenID) {
   	
 	$url = "https://fcm.googleapis.com/fcm/send";
@@ -131,7 +140,9 @@ function sendNotify($tokenID, $serverTokenID) {
   	return $result;
 }
 
-
+/**
+ * GET ALL TOKENS FROM DB
+ **/
 function getAllTokensID() {
   	
 	$servername = "localhost";

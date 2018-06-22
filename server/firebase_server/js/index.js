@@ -4,6 +4,9 @@ function loadPhones() {
     receive();
 }
 
+/**
+ * AL CARICAMENTO DELLA PAGINA RIEMPIAMO LA SELECT CON I NUMERI DI TELEFONO REGISTRATI NEL DATABASE
+ */
 function receive(){
 
 	var str = 'get_phones';
@@ -23,11 +26,13 @@ function receive(){
            
 			var response = JSON.parse(this.responseText);
 
+			console.log(response);
+
 			if( !( (response == false) || (response == "false") ) ){
 				fillSelect(response);
 			}
 			else {
-				//document.getElementById("resultParagraph").innerHTML = "RESULT : " + this.responseText;
+				document.getElementById("resultParagraph").innerHTML = " NO PHONE NUMBERS REGISTERED ";
 				document.getElementById("firebase_msg_select").disabled = true;
 				document.getElementById("firebase_msg_select").style.background = 'grey';
 			}
@@ -43,28 +48,34 @@ function fillSelect(response) {
 		return false;
 	}
 
-	//var response = ["Saab", "Volvo", "BMW"];
 	var select = document.getElementById("firebase_msg_select");
 
  	for(var i=0; i < response.length; i++) {
 	   var opt = document.createElement("option");
 	   opt.value= response[i].substring(0, response[i].indexOf('-') - 1);
-	   opt.innerHTML = response[i]; // whatever property it has
+	   opt.innerHTML = response[i];
 
-	   // then append it to the select element
 	   select.appendChild(opt);
 	}
 }
 
+/**
+ * FUNZIONE INVOCATA AL SUBMIT DELLA FORM DI INVIO NOTIFICA
+ */
 function form_submit(form){
 	var phone = form.phone.value;
 	
-	if(phone == "")
+	if(phone == ""){
+		document.getElementById("resultParagraph").innerHTML = "PHONE NUMBER NOT SELECTED";
 		return false;
+	}
 	
 	sendNotify(phone);
 }
 
+/**
+ * FUNZIONE CHE RICHIAMA script.php PER L'INVIO DELLA NOTIFICA FIREBASE
+ */
 function sendNotify(phone){
 
 	var str = 'send_notify';
@@ -84,12 +95,14 @@ function sendNotify(phone){
           
 			var response = JSON.parse(this.responseText);
 			
+			console.log(response);
+
 			if( !( (response == false) || (response == "false") ) ){
-				alert(response);
+				//alert(response);
 				document.getElementById("resultParagraph").innerHTML = "FIREBASE SEND SUCCESSFUL";
 			}
 			else {
-				alert(response);
+				//alert(response);
 				document.getElementById("resultParagraph").innerHTML = "ERROR IN FIREBASE SEND";
 			}
 		}
@@ -99,6 +112,9 @@ function sendNotify(phone){
 
 }
 
+/**
+ * FUNZIONE INVOCATA AL SUBMIT DELLA FORM DI INVIO NOTIFICA A TUTTI
+ */
 function form_submit_msg_all(){
 
 	var str = 'send_notify_all';
@@ -118,12 +134,13 @@ function form_submit_msg_all(){
           	
 			var response = JSON.parse(this.responseText);
 			
+			console.log(response);
+			
 			if( !( (response == false) || (response == "false") ) ){
-				alert(response);
 				document.getElementById("resultParagraph").innerHTML = "FIREBASE SEND ALL SUCCESSFUL";
 			}
 			else {
-				alert(response);
+				//alert(response);
 				document.getElementById("resultParagraph").innerHTML = "ERROR IN FIREBASE SEND ALL";
 			}
 		}

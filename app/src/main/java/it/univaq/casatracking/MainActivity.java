@@ -24,6 +24,7 @@ import com.multidots.fingerprintauth.FingerPrintAuthHelper;
 import com.multidots.fingerprintauth.FingerPrintUtils;
 
 import it.univaq.casatracking.model.Utente;
+import it.univaq.casatracking.services.BackgroundService;
 import it.univaq.casatracking.services.Services;
 import it.univaq.casatracking.utils.Preferences;
 
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements FingerPrintAuthCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //start background service for correct firebase notifications handling
+        startService(new Intent(getApplicationContext(), BackgroundService.class));
 
         mFingerPrintAuthHelper = FingerPrintAuthHelper.getHelper(this, this);
         messaggio = findViewById(R.id.messaggio);

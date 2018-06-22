@@ -20,7 +20,6 @@ if(!empty($task)){
 		case 'send_notify':
 			if(isset($_GET["phone"])){
 				$phone = $_GET["phone"];
-				$response = getTokenIDByPhone($phone);
 				$tokenID = getTokenIDByPhone($phone)[0][$phone];
 
 				$result = sendNotify($tokenID, $SERVER_TOKEN_ID);
@@ -29,7 +28,7 @@ if(!empty($task)){
 
 		case 'send_notify_all':
 			$tokens = getAllTokensID();
-			//send firebase message to all
+			//send firebase notification to all
 			$result = array();
 			foreach ($tokens as $key => $map){
 				foreach ($map as $phone => $tokenID) {
@@ -44,6 +43,9 @@ if(!empty($task)){
 				$token = $_POST["token"];
 				$phone = $_POST["phone"];
 				$userName = $_POST["userName"];
+
+				if($phone == "TEST")
+					break;
 
 				$result = storeData($token, $phone, $userName);
 			}

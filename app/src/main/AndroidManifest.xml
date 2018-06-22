@@ -23,6 +23,8 @@
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
 
     <application
         android:allowBackup="true"
@@ -48,6 +50,15 @@
         <service android:name=".services.Services" />
 
         <service android:name=".services.RequestService" />
+
+        <!-- ALWAYS BACKGROUND SERVICE FOR CORRECT HANDLE OF FIREBASE NOTIFICATIONS -->
+        <receiver android:name=".services.AutostartBackgroundServiceOnBoot" android:enabled="true" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".services.BackgroundService" />
 
         <!-- FIREBASE SEVICES -->
         <service
