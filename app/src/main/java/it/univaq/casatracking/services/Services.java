@@ -162,6 +162,11 @@ public class Services extends IntentService {
         String token = FirebaseInstanceId.getInstance().getToken();
         boolean success = false;
 
+        if(token == null){
+            Log.d(TAG, "null token");
+            return;
+        }
+
         if(!Request.isConnected(getApplicationContext())){
             //save token in shared preferences
             Preferences.saveFirebaseToken(getApplicationContext(), token);

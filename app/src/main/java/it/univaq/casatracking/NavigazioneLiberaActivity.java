@@ -38,6 +38,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 
 import java.io.File;
 
@@ -328,6 +329,17 @@ public class NavigazioneLiberaActivity extends AppCompatActivity implements OnMa
         IntentFilter filter_alert_receiver = new IntentFilter();
         filter_alert_receiver.addAction(ACTION_ALERT_SERVICE_COMPLETED);
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver_for_services, filter_alert_receiver);
+
+        /* Send token if not sent */
+        if(!Preferences.loadFirebaseToken(getApplicationContext()).equals("")){
+            Gson gson = new Gson();
+            Intent i = new Intent(getApplicationContext(), Services.class);
+            i.setAction(Services.ACTION_SEND_DATA_TO_FIREBASE_SERVER);
+            i.putExtra("data", gson.toJson(Preferences.loadUtente(getApplicationContext()), Utente.class));
+            startService(i);
+        }
+        /* /Send token if not sent */
+
     }
 
     @Override

@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -250,6 +251,17 @@ public class ScegliPercorsoActivity extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(), RequestService.class);
         intent.setAction(RequestService.ACTION_GET_PERCORSI);
         startService(intent);
+
+        /* Send token if not sent */
+        if(!Preferences.loadFirebaseToken(getApplicationContext()).equals("")){
+            Gson gson = new Gson();
+            Intent i = new Intent(getApplicationContext(), Services.class);
+            i.setAction(Services.ACTION_SEND_DATA_TO_FIREBASE_SERVER);
+            i.putExtra("data", gson.toJson(Preferences.loadUtente(getApplicationContext()), Utente.class));
+            startService(i);
+        }
+        /* /Send token if not sent */
+
     }
 
     @Override

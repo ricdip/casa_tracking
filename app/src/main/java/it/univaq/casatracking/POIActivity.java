@@ -471,6 +471,16 @@ public class POIActivity extends AppCompatActivity {
 
         }
 
+        /* Send token if not sent */
+        if(!Preferences.loadFirebaseToken(getApplicationContext()).equals("")){
+            Gson gson = new Gson();
+            Intent i = new Intent(getApplicationContext(), Services.class);
+            i.setAction(Services.ACTION_SEND_DATA_TO_FIREBASE_SERVER);
+            i.putExtra("data", gson.toJson(Preferences.loadUtente(getApplicationContext()), Utente.class));
+            startService(i);
+        }
+        /* /Send token if not sent */
+
     }
 
     @Override

@@ -20,8 +20,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
 
+import it.univaq.casatracking.model.Utente;
 import it.univaq.casatracking.services.Services;
+import it.univaq.casatracking.utils.Preferences;
 
 public class ChoiceActivity extends AppCompatActivity {
 
@@ -139,6 +142,16 @@ public class ChoiceActivity extends AppCompatActivity {
 
         }
         /* END LOCATION HANDLE */
+
+        /* Send token if not sent */
+        if(!Preferences.loadFirebaseToken(getApplicationContext()).equals("")){
+            Gson gson = new Gson();
+            Intent i = new Intent(getApplicationContext(), Services.class);
+            i.setAction(Services.ACTION_SEND_DATA_TO_FIREBASE_SERVER);
+            i.putExtra("data", gson.toJson(Preferences.loadUtente(getApplicationContext()), Utente.class));
+            startService(i);
+        }
+        /* /Send token if not sent */
 
     }
 
