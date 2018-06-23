@@ -47,7 +47,7 @@ if(!empty($task)){
 				if($phone == "TEST")
 					break;
 
-				$result = storeData($token, $phone, $userName);
+				$result = storeData($token, $phone, addslashes($userName));
 			}
 			break;
 

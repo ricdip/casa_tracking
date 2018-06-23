@@ -26,7 +26,7 @@ function getPhones() {
 		$results = array();
 		$i = 0;
 	    while($row = $result->fetch_assoc()) {
-	        $results[$i++] = $row["user_phone"] . " - " . $row["user_name"];
+	        $results[$i++] = $row["user_phone"] . " - " . stripslashes($row["user_name"]);
 	    }
 
 	} else {
