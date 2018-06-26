@@ -6,9 +6,9 @@
 
 <head>
    
-    <title>Firebase Notifications</title>
+    <title>Attivazione monitoraggio outdoor da remoto</title>
     
-    <meta name="description" content="CasaTracking Firebase handling"/>
+    <meta name="description" content="CasaTracking wake up phones handling"/>
     <meta name="keywords" content="HTML, CSS, JavaScript, PHP"/>
     <meta name="author" content="Riccardo Armando Di Prinzio"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -20,19 +20,19 @@
 
 <body>
 
-<h1 class="title_bar">FIREBASE NOTIFICATIONS</h1>
+<h1 class="title_bar">ATTIVAZIONE MONITORAGGIO OUTDOOR DA REMOTO</h1>
 
 	<div class="form_container">
 		<form id="firebase_msg_form" onsubmit="form_submit(this); return false;" method="GET">
 			
 			<div class="select_field">
 				<select class="select" id="firebase_msg_select" name="phone">
-				  <option value="" disabled="disabled" selected="selected">User phone - Name</option>
+				  <option value="" disabled="disabled" selected="selected">Telefono - Nome</option>
 				</select>
 			</div>
 
 			<div class="input_field">
-				<input class="button_submit" type="submit" value="NOTIFY" />
+				<input id="notify" class="button_submit" type="submit" value="ATTIVA" />
 			</div>
 			
 			
@@ -43,7 +43,7 @@
 		<form id="firebase_msg_all_form" onsubmit="form_submit_msg_all(); return false;" method="GET">
 			
 			<div class="input_field_no_top_space">
-				<input class="button_submit" type="submit" value="NOTIFY ALL" />
+				<input id="notify_all" class="button_submit" type="submit" value="ATTIVA TUTTI" />
 			</div>
 			
 		</form>

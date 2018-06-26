@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-require_once('/functions/functions.php'); 
+require_once('/web/htdocs/www.smartengineers.eu/home/push/script/functions/functions.php'); 
 $SERVER_TOKEN_ID = "AAAApPUz3bw:APA91bGEbKrK5gfIWy8yJywUzirGEHZGBXlIr3QCUWvFhK-Yb8H7wXqQ80IEhKLb9QacRGs3gFYLr8NA2GxqbwbWJ68DE777MzVsEylH0dl52AwJ6zR3zjNxOaTmNqYXLyPpIogedr1k" ;
 
 $result = '';
@@ -20,9 +20,9 @@ if(!empty($task)){
 		case 'send_notify':
 			if(isset($_GET["phone"])){
 				$phone = $_GET["phone"];
-				$tokenID = getTokenIDByPhone($phone)[0][$phone];
+				$tokenID = getTokenIDByPhone($phone);
 
-				$result = sendNotify($tokenID, $SERVER_TOKEN_ID);
+				$result = sendNotify($tokenID[0][$phone], $SERVER_TOKEN_ID);
 			}
 			break;
 

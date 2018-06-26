@@ -67,7 +67,7 @@ public class POIActivity extends AppCompatActivity {
     private Utente utente;
     private Percorso percorso;
     private POI poi;
-    //TODO : VEDERE SE GIUSTO ALERT O NECESSITA DI COLLEGAMENTO A SERVER PER PRENDERLA
+
     private String alert = "0";
 
     private String result_from_server;

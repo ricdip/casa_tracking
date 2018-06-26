@@ -1,15 +1,35 @@
 <?php
 
+/* SERVER VARIABLES */
+$servername = "62.149.150.110";
+$username = "Sql321130";
+$password = "da56b9ac";
+$dbname = "Sql321130_1";
+
+
 /**
  * GET ALL PHONE NUMBERS FROM DATABASE
  **/
 function getPhones() {
-  	
+
+	global $servername, $username, $password, $dbname;
+
+/*  	
 	$servername = "localhost";
 	$username = "root";
 	$password = "";
 	$dbname = "firebasetokendb";
 	$results = "";
+*/
+/*
+	$servername = "62.149.150.110";
+	$username = "Sql321130";
+	$password = "da56b9ac";
+	$dbname = "Sql321130_1";
+*/
+	$results = "";
+
+
 
 	// Create connection
 	$conn = new mysqli($servername, $username, $password, $dbname);
@@ -64,10 +84,8 @@ function storeData($tokenID, $userPhone, $userName) {
  **/
 function getTokenIDByPhone($userPhone) {
   	
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "firebasetokendb";
+	global $servername, $username, $password, $dbname;
+
 	$results = "";
 
 	// Create connection
@@ -145,10 +163,8 @@ function sendNotify($tokenID, $serverTokenID) {
  **/
 function getAllTokensID() {
   	
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "firebasetokendb";
+	global $servername, $username, $password, $dbname;
+
 	$results = "";
 
 	// Create connection
@@ -184,10 +200,8 @@ function getAllTokensID() {
  **/
 function insertData($tokenID, $userPhone, $userName){
 
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "firebasetokendb";
+	global $servername, $username, $password, $dbname;
+
 	$msg = "";
 
 	// Create connection
@@ -213,10 +227,8 @@ function insertData($tokenID, $userPhone, $userName){
 
 function updateData($tokenID, $userPhone, $userName){
 
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "firebasetokendb";
+	global $servername, $username, $password, $dbname;
+	
 	$msg = "";
 
 	// Create connection
