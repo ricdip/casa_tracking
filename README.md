@@ -1,5 +1,5 @@
-Progetto 'Casa+ Tracking'
-=========================
+Applicazione Android per il tracking outdoor
+============================================
 
 Descrizione
 -----------
@@ -16,7 +16,7 @@ Realizzazione di un'applicazione che ha il compito di effettuare il tracking di 
 * Chiamata ed SMS con la posizione utente disponibili in quasiasi momento premendo l'apposito pulsante SOS.
 * Possibilit&agrave; di scattare foto da utilizzare successivamente come immagine di un POI (Point Of Interest).
 * Avvio automatico dell'app, con conseguente geolocalizzazione utente, attraverso notifiche dati Firebase.
-* Server che si occupa di salvare l'associazione TokenID - UserID, ricevuti dall'app installata sui vari client, in un database MySQL. Tale server dispone di un'interfaccia web con logica PHP/JS con la quale &egrave; possibile inviare una notifica dati Firebase al client corrispondente allo UserID.
+* [Server](http://www.smartengineers.eu/push/) che si occupa di salvare l'associazione TokenID - UserID, ricevuti dall'app installata sui vari client, in un database MySQL. Tale server dispone di un'interfaccia web con logica PHP/JS con la quale &egrave; possibile inviare una notifica dati Firebase al client corrispondente allo UserID.
 
 ### Struttura del progetto
 
